@@ -2,9 +2,6 @@
 title: "The impact of NHI on health service utilization in Lao PDR"
 author: "Sekeun Daniel Yu (yus109@mcmaster.ca; sekeun.yu@redcross.ch)"
 date: "March/2025"
-output:
-  pdf_document: default
-
 ---
 
 ```{r knitr, include=FALSE}
