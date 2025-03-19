@@ -1,0 +1,108 @@
+---
+title: "The impact of NHI on health service utilization in Lao PDR"
+author: "Sekeun Daniel Yu (yus109@mcmaster.ca; sekeun.yu@redcross.ch)"
+date: "November/2024"
+
+---
+
+```{r knitr, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+# Install and load packages
+<br>
+```{r packages, echo=TRUE, message=FALSE, results="hide"}
+
+# Set working directory
+library(rstudioapi)
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+getwd()
+
+# List of required packages
+pkg <- c(
+         # Set up
+         "rstudioapi",          # API for interacting with RStudio
+         "remotes",             # Install R packages from other sources
+         "devtools",            # Development tools for R packages
+         "foreign",             # Reading / writing data from other software
+         "rlang",               # Tidy evaluation evaluation tools
+
+         # Data wrangling
+         "BMisc",               # Miscellaneous tools for data manipulation
+         "tidyverse",           # Data science packages (incl. ggplot2)
+         "tinytex",             # Tools for LaTeX compilation
+         "tidylog",             # Logs tidyverse operations
+         "forecast",            # Time series forecasting
+         "lubridate",           # Handling dates and times
+         "broom",               # Tidying model outputs
+         "FreqProf",            # Frequency profiles
+         "arsenal",             # Comparing data frames
+         "writexl",             # Writing Excel files
+         
+         # DID analysis (Difference-in-Differences)
+         "fixest",              # Fixed effects regression
+         "plm",                 # Linear models for panel data
+         "lmtest",              # Testing linear regression models
+         "did",                 # DID - Callaway & Sant’Anna (2021)
+         "DRDID",               # Doubly robust estimator for DID
+         "did2s",               # DID - Gardner (2021)
+         "didimputation",       # DID - Borusyak, Jaravel, & Spiess (2024)
+         "TwoWayFEWeights",     # DID - de Chaisemartin & D'Haultfoeuille (2020)
+         "etwfe",               # DID - Woolridge (2021)
+         "HonestDiD",           # HonestDiD - Rambachan and Roth (2023)
+         "bacondecomp",         # Bacon decomposition for DID (2021)
+         "WeightIt",            # Propensity score weighting
+         "cobalt",              # Covariate balance tables and plots
+         "sandwich",            # Robust covariance matrix estimators
+         "clubSandwich",        # Cluster-robust variance estimators
+         "meta",                # General package for meta-analysis
+
+         # Graphics
+         "ggh4x",               # ggplot2 extension
+         "gridExtra",           # Functions for 'Grid' graphics
+         "showtext",            # Easy font management
+         "sysfonts",            # Access to system and Google fonts
+         "MetBrewer",           # Color themes from Met museum
+         "RColorBrewer",        # Color palettes for visualizations
+         
+         # Output
+         "gtsummary",           # Summary tables generation
+         "flextable",           # Tables for reporting and publications
+         "officer",             # Manipulate Word documents (.docx)
+         "Rfast",               # Fast statistical functions
+         "styler",              # Code formatting
+         "logr",                # Logging outputs
+         "rmarkdown",           # Dynamic report generation
+         "knitr"                # R Markdown knitting
+)
+
+# Function to load required packages and install missing ones
+load_or_install <- function(pkg) {
+  new.pkg <- pkg[!(pkg %in% installed.packages())]
+  if (length(new.pkg)) {
+    install.packages(new.pkg, repos = "http://cran.rstudio.com")
+  }
+  sapply(pkg, require, character.only = TRUE)
+}
+
+# Load or install packages
+load_or_install(pkg)
+
+# Others
+library(readxl);        # Read excel file
+font_add_google("Source Sans Pro")
+
+# Warnings to be displayed
+options(nwarnings = 10000)
+options()$nwarnings
+
+# Generate R script
+knitr::purl("Lao_NHI_00_package.Rmd", output = "Lao_NHI_00_package.R")
+
+
+```
+<br>
+
+
