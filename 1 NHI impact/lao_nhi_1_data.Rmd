@@ -1,7 +1,8 @@
 ---
 title: "The impact of NHI on health service utilization in Lao PDR"
 author: "Sekeun Daniel Yu (yus109@mcmaster.ca; sekeun.yu@redcross.ch)"
-date: "March/2025"
+date: "April/2025"
+
 ---
 
 ```{r knitr, include=FALSE}
@@ -21,7 +22,7 @@ setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 getwd()
 
 # install and load packages
-source("Lao_NHI_00_package.R", echo = TRUE)
+source("lao_nhi_0_package.r", echo = TRUE)
 
 ```
 <br>
@@ -141,7 +142,7 @@ colnames(data_mch) <- c(
 
 
 # Export datasets to Excel files
-if(!dir.exists("./data export")){dir.create("./data export")}
+if(!dir.exists("./data export")) {dir.create("./data export")}
 write_xlsx(data_op, "./data export/lao_nhi_01_data_op.xlsx")
 write_xlsx(data_ip, "./data export/lao_nhi_01_data_ip.xlsx")
 write_xlsx(data_opip, "./data export/lao_nhi_01_data_opip.xlsx")
@@ -260,10 +261,10 @@ data.lsb <- data.lsb %>%
   mutate(time = as.numeric(row_number())) %>%     # add sequence
   filter(year <= 2020)
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ------------------------------------------------------------------------------
 # Estimate monthly population estimates 01/2015 - 06/2019
 # through linear interpolation
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ------------------------------------------------------------------------------
 
 popest_y1 <- data.lsb[, c("pnum", "district", "pop_age_u5", "year")]
 popest_y2 <- data.lsb[, c("pnum", "district", "pop_age_o5", "year")]
@@ -356,10 +357,10 @@ data.pop.m.prov <- data.pop.m.dist %>%
 
 #colnames(data.pop.m.prov) <- c("pnum","month","age_u5.m.p","age_o5.m.p","birth.m.p","faclevel")
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ------------------------------------------------------------------------------
 # Estimate quarterly population estimates 01/2015 - 06/2019 
 # through linear interpolation
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ------------------------------------------------------------------------------
 
 data.pop.q.dist <- data.pop.m.dist %>%
   mutate(quarter = lubridate::quarter(month, with_year = TRUE),

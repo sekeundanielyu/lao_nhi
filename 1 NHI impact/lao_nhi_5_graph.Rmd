@@ -1,0 +1,872 @@
+---
+title: "The impact of NHI on health service utilization in Lao PDR"
+author: "Sekeun Daniel Yu (yus109@mcmaster.ca; sekeun.yu@redcross.ch)"
+date: "April/2025"
+
+---
+
+```{r knitr, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = TRUE, message = TRUE)
+
+```
+
+# Setup
+<br>
+```{r setup, echo=TRUE, message=FALSE, results="hide"}
+
+# Set working directory
+rm(list = ls(all.names = TRUE))
+#install.packages("rstudioapi")
+library(rstudioapi)
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+getwd()
+
+# Install and load packages
+source("lao_nhi_0_package.r", echo = TRUE)
+
+# Create directories
+if(!dir.exists("./graph")) {dir.create("./graph")}
+
+
+var_list <- c("opo5r", "ipo5r", "opu5r", "ipu5r", "iplos", "delr")
+
+# Label top
+var_label_t <- c("Outpatient visits per 1000, aged >= 5",
+               "Inpatient admissions per 100 000, aged >= 5",
+               "Outpatient visits per 1000, aged < 5",
+               "Inpatient admissions per 100 000, aged < 5",
+               "Inpatient average length of stay",
+               "Institutional birth rate")
+
+# Label left
+var_label_l <- c("Outpatient\nvisits\nper 1000,\naged >= 5",
+                 "Inpatient\nadmissions\nper 100 000,\naged >= 5",
+                 "Outpatient\nvisits\nper 1000,\naged < 5",
+                 "Inpatient\nadmissions\nper 100 000, \naged < 5",
+                 "Inpatient\naverage\nlength\nof stay",
+                 "Institutional\nbirth\nrate")
+
+```
+<br>
+
+# Supplementary Figure Layer and Theme (r6 x c4)
+<br>
+```{r sfig_theme, eval=FALSE, include=FALSE}
+
+layer.64 <-
+  list(
+    geom_vline(aes(xintercept = 0), 
+             linetype = "dashed", color = "black", 
+             alpha = 0.9, linewidth = 0.05),
+    geom_rect(aes(xmin = 0, xmax = Inf, 
+                ymin = overall.conf.low, ymax = overall.conf.high), 
+            fill = "#c5dec9", alpha = 0.15),
+    geom_hline(aes(yintercept = 0), color = "black", linewidth = 0.175),
+    geom_segment(aes(x = 0, xend = Inf, 
+                   y = overall.conf.low, yend = overall.conf.low), 
+               color = "#bad9bf", linewidth = 0.05, alpha = 0.5),
+    geom_segment(aes(x = 0, xend = Inf, 
+                   y = overall.conf.high, yend = overall.conf.high), 
+               color = "#bad9bf", linewidth = 0.05, alpha = 0.5),
+    geom_point(size = 0.6, color = "#006918"),
+    geom_linerange(aes(x = event.time, ymin = conf.low, ymax = conf.high), 
+                 size = 0.3, color = "#006918"),
+    geom_segment(aes(x = 0, xend = Inf, 
+                   y = overall.att, yend = overall.att), 
+               color = "#d62b47", linewidth = 0.2, alpha = 0.5),
+    geom_text(x = Inf, y = Inf, label = expression(Delta),
+            family = "Source Sans Pro", color = "black",
+            vjust = 1.5, hjust = 6, size = 2),
+    geom_text(aes(x = x.pctchange, y = Inf, label = pctchange),
+            family = "Source Sans Pro", color = "black",
+            vjust = 1.5, hjust = 0.5, size = 2))
+
+theme.64 <- function() {
+  theme_bw() +
+    theme(
+      text = element_text(family = "Source Sans Pro"),
+      panel.border = element_rect(color = "black", linewidth = 0.4),
+      panel.grid.major.x = element_blank(),
+      panel.grid.major.y = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.background = element_blank(),
+      plot.title = element_text(color = "black", size = 8),
+      plot.margin = margin(t = 0.1, r = 0.1, b = 0.1, l = 0, unit = "in"),
+      axis.title.x = element_text(color = "black", size = 7, 
+                                  margin = margin(0.15, 0, 0, 0, "in")),
+      axis.title.y = element_blank(),
+      axis.ticks.y = element_line(color = "black", linewidth = 0.2),
+      axis.ticks.x = element_line(color = "black", linewidth = 0.2),
+      axis.text.y = element_text(color = "black", size = 7),
+      axis.text.x = element_text(color = "black", size = 7),
+      strip.placement = "outside",
+      strip.text = element_text(color = "black", size = 7),
+      strip.text.y.left = element_text(angle = 0, hjust = 0, 
+                                       margin = margin(t = 0, r = 0, b = 0, 
+                                                       l = 0.05, "in")),
+      strip.text.x = element_text(margin = margin(0.15, 0, 0.05, 0, "in")),
+      strip.background = element_blank()
+      # legend.title = element_blank(),
+      # legend.text = element_text(size = 7),
+      # legend.position = c(0.75, 0.1)
+    )
+}
+
+```
+
+# Main Figure 3. DiD analysis
+<br>
+```{r fig_3_main, eval=FALSE, include=FALSE}
+
+# Load data
+plot.dyn <- var_list %>%
+  map(~ read_excel(paste0("./output/q_disl/", .x, "_aggte_dyn.xlsx"))) %>%
+  bind_rows() %>%
+  mutate(outcome2 = factor(outcome, 
+                           levels = var_list, 
+                           labels = var_label_t),
+         across(c(overall.att, overall.se, 
+                  overall.conf.low, overall.conf.high), 
+                ~ ifelse(event.time < 0, NA, .)),
+         pctchange = scales::percent(overall.change, accuracy = 0.1),
+         pctchange = if_else(event.time != 0, NA, pctchange))
+
+write_xlsx(plot.dyn, paste0("./output/", "fig_3_did_main.xlsx"))
+
+# Plot -------------------------------------------------------------------------
+
+data.uc.cls <- plot.dyn %>% filter(name == "uc.cls")
+xl <- range(plot.dyn$event.time) # x-axis length / index
+
+plot <- 
+  ggplot(data.uc.cls, aes(x = event.time, y = estimate)) +
+  facet_wrap(~outcome2, ncol = 2, scales = "free") +
+  geom_vline(
+    aes(xintercept = 0), linetype = "dashed", col = "black", 
+    alpha = 0.9, linewidth = 0.05) +
+  geom_rect(aes(xmin = 0, xmax = Inf, ymin = overall.conf.low, 
+                ymax = overall.conf.high), fill = "#c5dec9", alpha = 0.15) +
+  geom_hline(aes(yintercept = 0), col = "black", linewidth = 0.175) +
+  geom_segment(aes(x = 0, xend = Inf, y = overall.conf.low, 
+                   yend = overall.conf.low), color = "#bad9bf", 
+               linetype = 1, linewidth = 0.05, alpha = 0.5) +
+  geom_segment(aes(x = 0, xend = Inf, y = overall.conf.high, 
+                   yend = overall.conf.high), color = "#bad9bf", 
+               linetype = 1, linewidth = 0.05, alpha = 0.5) +
+  geom_point(size = 0.6, color = "#006918") +
+  geom_linerange(aes(x = event.time, ymin = conf.low, ymax = conf.high),
+                 size = 0.3, color = "#006918") +
+  geom_segment(aes(x = 0, xend = Inf, y = overall.att, yend = overall.att),
+               color = "#d62b47", linewidth = 0.2, alpha = 0.5) +
+  geom_text(x = 1.7, y = Inf, label = expression(Delta), 
+            family = "Source Sans Pro", color = "black", 
+            vjust = 1.5, size = 2) +
+  geom_text(aes(x = 2.5, y = Inf, label = pctchange), 
+            family = "Source Sans Pro", color = "black", 
+            vjust = 1.5, size = 2) +
+  scale_y_continuous(name = "Difference-in-differences estimates") +
+  scale_x_continuous(name = "Time since NHI introduction, quarter", 
+                     breaks = xl[1]:xl[2]) +
+  theme_bw() +
+  theme(
+    text = element_text(family = "Source Sans Pro"),
+    panel.border = element_rect(color = "black", linewidth = 0.4),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    plot.title = element_text(color = "black", size = 8),
+    plot.margin = margin(t = 0.2, r = 0.2, b = 0.1, l = 0.1, unit = "in"),
+    axis.title.x = element_text(color = "black", size = 7,
+                                margin = margin(0.15, 0, 0, 0, "in")),
+    axis.title.y = element_text(color = "black", size = 7),
+    axis.ticks.y = element_line(color = "black", linewidth = 0.2),
+    axis.ticks.x = element_line(color = "black", linewidth = 0.2),
+    axis.text.y = element_text(color = "black", size = 7),
+    axis.text.x = element_text(color = "black", size = 7),
+    strip.text = element_text(color = "black", size = 7),
+    strip.text.x = element_text(margin = margin(0.15, 0, 0.05, 0, "in")),
+    strip.background = element_blank(),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 7),
+    legend.position.inside = c(0.75, 0.1))
+
+png(paste0("./graph/", "fig_3_did_main.png"), 
+    units = "in", width = 5.1, height = 6, res = 500)
+print(plot)
+dev.off()
+
+```
+<br>
+
+# Supplementary Figure 5. DiD analysis by facility type
+<br>
+```{r sfig_5_facility, eval=FALSE, include=FALSE}
+
+# Load data
+read_data <- function(fl, vl) {
+  map_dfr(vl, ~ {
+    filepath <- paste0("./output/q_facl/", fl, 
+                       "/", .x, "_aggte_dyn_", fl, ".xlsx")
+    read_excel(filepath) %>%
+      mutate(facl = fl)
+  })
+}
+
+plot.fac <- map_dfr(c("dh", "hc"), 
+                    ~ read_data(.x, var_list)) %>%
+  mutate(outcome2 = factor(outcome,
+                           levels = var_list,
+                           labels = var_label_l),
+         across(c(overall.att, overall.se, 
+                  overall.conf.low, overall.conf.high),
+                ~ ifelse(event.time < 0, NA, .)),
+         pctchange = scales::percent(overall.change, accuracy = 0.1),
+         pctchange = if_else(event.time != 0, NA, pctchange),
+         payment = case_when(
+           facl == "dh" & outcome %in% c("opo5r", "opu5r") ~ "FFS to Capitation",
+           facl == "dh" & outcome %in% c("ipo5r", "ipu5r", "iplos", "delr") ~ 
+             "FFS to Case-based payment",
+           facl == "hc" ~ "FFS to Capitation",
+           TRUE ~ NA),
+         payment = if_else(is.na(pctchange), NA, payment),
+         facl = factor(facl,
+                       levels = c("dh", "hc"),
+                       labels = c("District hospitals", "Health centers")))
+    
+write_xlsx(plot.fac, paste0("./output/", "sfig_5_did_facility.xlsx"))
+
+# Plot -------------------------------------------------------------------------
+
+plot.fac <- plot.fac %>% filter(name == "uc.cls")
+xl <- range(plot.fac$event.time) # x-axis length / index
+
+plot <- ggplot(
+  plot.fac, aes(x = event.time, y = estimate)) + 
+  facet_grid(outcome2 ~ facl, scales = "free", switch = "y") + 
+  geom_vline(aes(xintercept = 0), linetype = "dashed", 
+             color = "black", alpha = 0.9, linewidth = 0.05) +
+  geom_hline(aes(yintercept = 0), color = "black", linewidth = 0.175) +
+  geom_rect(aes(xmin = 0, xmax = Inf, ymin = overall.conf.low, 
+                ymax = overall.conf.high), fill = "#c5dec9", alpha = 0.15) +
+  geom_segment(aes(x = 0, xend = Inf, y = overall.conf.low, 
+                   yend = overall.conf.low), color = "#bad9bf", 
+               linewidth = 0.05, alpha = 0.5) +
+  geom_segment(aes(x = 0, xend = Inf, y = overall.conf.high, 
+                   yend = overall.conf.high), color = "#bad9bf", 
+               linewidth = 0.05, alpha = 0.5) +
+  geom_segment(aes(x = 0, xend = Inf, y = overall.att, yend = overall.att), 
+               color = "#d62b47", linewidth = 0.2, alpha = 0.5) +
+  geom_point(size = 0.6, color = "#006918") +
+  geom_linerange(aes(ymin = conf.low, ymax = conf.high), 
+                 size = 0.3, color = "#006918") +
+  geom_text(x = 1.5, y = Inf, label = expression(Delta), 
+            family = "Source Sans Pro", color = "black", vjust = 1.5, size = 2) +
+  geom_text(aes(x = 2.7, y = Inf, label = pctchange), 
+            family = "Source Sans Pro", color = "black", vjust = 1.5, size = 2) +
+#  geom_text(aes(x = -7, y = Inf, label = payment), 
+#            family = "Source Sans Pro", color = "black", vjust = 1.5, hjust = 0,
+#            size = 1.8) +
+
+  scale_x_continuous(name = "Time since NHI introduction, quarter", 
+                     breaks = xl[1]:xl[2]) +
+  theme_bw() +
+  theme(
+    text = element_text(family = "Source Sans Pro"),
+    panel.border = element_rect(color = "black", linewidth = 0.4),
+    panel.grid = element_blank(),
+    plot.margin = margin(t = 0.1, r = 0.1, b = 0.05, l = 0, unit = "in"),
+    axis.title.x = element_text(color = "black", size = 6, 
+                                margin = margin(0.15, 0, 0, 0, "in")),
+    axis.title.y = element_blank(),
+    axis.ticks = element_line(color = "black", linewidth = 0.2),
+    axis.text = element_text(color = "black", size = 6),
+    strip.placement = "outside",
+    strip.text = element_text(color = "black", size = 6),
+    strip.text.y.left = element_text(
+      angle = 0, hjust = 0,
+      margin = margin(t = 0, r = 0, b = 0, l = 0.05, "in")),
+    strip.text.x = element_text(margin = margin(0.15, 0, 0.05, 0, "in")),
+    strip.background = element_blank(),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 6),
+    legend.position.inside = c(0.75, 0.1))
+
+png(paste0("./graph/", "sfig_5_did_facility.png"), 
+    units = "in", width = 4, height = 5.5, res = 500)
+print(plot)
+dev.off()
+
+```
+<br>
+
+# Supplementary Figure 6. DiD analysis by district-level poverty status
+<br>
+```{r sfig_6_poverty, eval=FALSE, include=FALSE}
+
+plot.pov <- read_excel("./output/sfig_6_did_poverty.xlsx")
+plot.pov <- plot.pov %>%
+  filter(pgroup != "Overall") %>%
+  mutate(outcome2 = factor(outcome, 
+                           levels = var_list, 
+                           labels = var_label_t))
+
+write_xlsx(plot.pov, paste0("./output/", "sfig_6_did_poverty.xlsx"))
+
+# Plot -------------------------------------------------------------------------
+ 
+xl <- range(plot.pov$event.time) # x-axis length / index
+
+plot <- ggplot(
+  plot.pov, aes(x = event.time, y = estimate, color = pgroup, shape = pgroup)) + 
+  facet_wrap(~outcome2, ncol = 2, scales = "free") +
+  geom_vline(aes(xintercept = 0), linetype = "dashed", 
+             color = "black", alpha = 0.9, linewidth = 0.05) +
+  geom_hline(aes(yintercept = 0), color = "black", linewidth = 0.175) +
+    geom_point(position = position_dodge2(width = 0.6), size = 0.9) +
+  geom_linerange(aes(x = event.time, ymin = conf.low, ymax = conf.high), 
+                 position = position_dodge2(width = 0.6), size = 0.3) +
+  scale_y_continuous(name = "Difference-in-differences estimates") +
+  scale_x_continuous(name = "Time since NHI introduction, quarter",
+                     breaks = xl[1]:xl[2]) +
+  scale_color_manual(values = c("#FC4E07", "#00AFBB"),
+                     guide = guide_legend(nrow = 1)) +
+  theme_bw() +
+  theme(
+    text = element_text(family = "Source Sans Pro"),
+    panel.border = element_rect(color = "black", linewidth = 0.4),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    plot.title = element_text(color = "black", size = 8),
+    plot.margin = margin(t = 0.2, r = 0.2, b = 0.1, l = 0.1, unit = "in"),
+    axis.title.x = element_text(color = "black", size = 7,
+                                margin = margin(t = 0.15, unit = "in")),
+    axis.title.y = element_text(color = "black", size = 7),
+    axis.ticks = element_line(color = "black", linewidth = 0.2),
+    axis.text = element_text(color = "black", size = 7),
+    strip.text = element_text(color = "black", size = 7),
+    strip.text.x = element_text(margin = margin(t = 0.15, b = 0.05, unit = "in")),
+    strip.background = element_blank(),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 6),
+    legend.key.size = unit(0.2, "in"),
+    legend.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "in"),
+    legend.position = c(0.1, -0.065))
+
+png(paste0("./graph/", "sfig_6_did_poverty.png"), 
+    units = "in", width = 5.1, height = 6, res = 500)
+print(plot)
+dev.off()
+
+```
+<br>
+
+# Supplementary Figure 7. DiD analysis by intervention group
+<br>
+```{r sfig_7_group, eval=FALSE, include=FALSE}
+
+# Load data
+plot.grp.all <- var_list %>%
+  map(~ read_excel(paste0("./output/q_disl/", .x, "_attgt.xlsx"))) %>%
+  bind_rows() %>%
+  dplyr::select(-c("weight", "n.group"))
+
+plot.grp <- var_list %>%
+  map(~ read_excel(paste0("./output/q_disl/", .x, "_aggte_grp.xlsx"))) %>%
+  bind_rows() %>%
+  dplyr::select(-weight, -n.group) %>%
+  filter(group != "Average") %>%
+  mutate(group = as.numeric(group)) %>%
+  select(group, name, pretrendtype, outcome, 
+         estimate, std.error, conf.low, conf.high, change) %>%
+  rename(att = estimate, se = std.error) %>%
+  rename_at(vars(att:change), ~ paste0("overall.", .)) %>%
+  mutate(pctchange = scales::percent(overall.change, accuracy = 0.1))
+
+plot.grp <- plot.grp %>% 
+  left_join(plot.grp.all,
+            by = c("group","name","pretrendtype","outcome")) %>%
+  mutate(event.time = time - group,
+         group = factor(group, 
+                        levels = c(4, 5, 6, 8),
+                        labels = c("NHI introduced in \nQ3/2016\nN=15",
+                                   "NHI introduced in \nQ4/2016\nN=7",
+                                   "NHI introduced in \nQ1/2017\nN=37",
+                                   "NHI introduced in \nQ3/2017\nN=24")),
+         outcome2 = factor(outcome, 
+                           levels = var_list, 
+                           labels = var_label_l),
+         pctchange = if_else(event.time != 0, NA, pctchange)) %>%
+  group_by(group) %>%
+  mutate(x.pctchange = max(event.time) - 0.8)
+
+write_xlsx(plot.grp, paste0("./output/", "sfig_7_did_group.xlsx"))
+
+# Plot -------------------------------------------------------------------------
+
+plot.grp <- plot.grp %>% filter(name == "uc.cls")
+xl <- range(plot.grp$event.time) # x-axis length / index
+
+plot <- ggplot(
+  plot.grp, aes(x = event.time, y = estimate)) + 
+  facet_grid(outcome2 ~ group, scales = "free", switch = "y") +
+  scale_x_continuous(name = "Time since NHI introduction, quarter",
+                     breaks = xl[1]:xl[2]) +
+  layer.64 +  # Add the layers
+  theme.64()  # Add the theme
+
+png(paste0("./graph/","sfig_7_did_group.png"), 
+    units = "in", width = 4.75, height = 7, res = 500)
+print(plot)
+dev.off()
+
+```
+<br>
+
+# Supplementary Figure 8. DiD analysis with adjusted model specifications 
+# (balanced, last-treated, no covariate)
+<br>
+```{r sfig_8_adjust, eval=FALSE, include=FALSE}
+
+# Load data
+plot.dyn <- var_list %>%
+  map(~ read_excel(paste0("./output/q_disl/", .x, "_aggte_dyn.xlsx"))) %>%
+  bind_rows()
+
+plot.dyn.b <- var_list %>%
+  map(~ read_excel(paste0("./output/q_disl/", .x, "_aggte_dyn_b.xlsx"))) %>%
+  bind_rows()
+
+plot.dyn.b.new <- plot.dyn %>% # into new frame
+  select(type, term, event.time, name, pretrendtype, outcome) %>%
+  left_join(plot.dyn.b, by = c("type", "term", "event.time", 
+                               "name", "pretrendtype", "outcome")) %>%
+  filter(name == "uc.cls" | name == "vc.cls") %>% 
+  mutate(name = ifelse(name == "uc.cls","uc.clsbal", "vc.clsbal"))
+
+plot.ajt <- rbind(plot.dyn, plot.dyn.b.new) %>%
+  filter(name %in% c("uc.cls", "uc.clsbal", "uc.clslast", "u")) %>%
+  mutate(outcome2 = factor(outcome, 
+                           levels = var_list, 
+                           labels = var_label_l),
+         across(c(overall.att, overall.se, 
+                  overall.conf.low, overall.conf.high), 
+                ~ ifelse(event.time < 0, NA, .)),
+         pctchange = scales::percent(overall.change, accuracy = 0.1),
+         pctchange = if_else(event.time != 0, NA, pctchange),
+         ajttype = factor(
+           name,
+           levels = c("uc.cls", "uc.clsbal", "uc.clslast", "u"),
+           labels = c("Base model:\nLast + not-yet-treated\nno anticipation",
+                      "Balanced\nNHI exposure\n(e=0-2)",
+                      "Last treated units\nas control",
+                      "No covariate\n(unconditional PTA)"))) %>%
+  group_by(name) %>%
+  mutate(x.pctchange = max(event.time) - 1.1)
+
+write_xlsx(plot.ajt, paste0("./output/", "sfig_8_did_adjust.xlsx"))
+
+
+# Plot -------------------------------------------------------------------------
+ 
+xl <- range(plot.ajt$event.time) # x-axis length / index
+
+plot <- ggplot(
+  plot.ajt, aes(x = event.time, y = estimate)) + 
+  facet_grid(outcome2 ~ ajttype, scales = "free", switch = "y") +
+  scale_x_continuous(name = "Time since NHI introduction, quarter",
+                     breaks = xl[1]:xl[2]) +
+  layer.64 +  # Add the layers
+  theme.64()  # Add the theme
+
+png(paste0("./graph/", "sfig_8_did_adjust.png"), 
+    units = "in", width = 4.75, height = 7, res = 500)
+print(plot)
+dev.off()
+
+```
+<br>
+
+# Supplementary Figure 9. Difference-in-differences analysis using alternative heterogeneity-robust estimators
+<br>
+```{r sfig_9_hetero, eval=FALSE, include=FALSE}
+
+data.htr <- read_excel("./output/sfig_9_did_hetero.xlsx")
+unique(data.htr$method)
+
+data.htr <- data.htr %>%
+  mutate(outcome = factor(outcome, levels = var_list, labels = var_label_t))
+
+# Plot -------------------------------------------------------------------------
+
+xl <- range(data.htr$event.time) # x-axis length / index
+
+plot <- ggplot(
+  data.htr, aes(x = event.time, y = estimate, color = method)) + 
+  facet_wrap(~ outcome, ncol = 2, scales = "free") +
+  geom_vline(aes(xintercept = 0), linetype = "dashed", color = "black", 
+             alpha = 0.9, linewidth = 0.05) +
+  geom_hline(aes(yintercept = 0), color = "black", linewidth = 0.175) +
+  geom_point(position = position_dodge2(width = 0.6), size = 0.6) +
+  geom_linerange(aes(x = event.time, ymin = conf.low, ymax = conf.high), 
+                 position = position_dodge2(width = 0.6), size = 0.3) +
+  scale_y_continuous(name = "Difference-in-differences estimates") +
+  scale_x_continuous(name = "Time since NHI introduction, quarter", 
+                     breaks = xl[1]:xl[2]) +
+  scale_color_manual(name = "Estimation Method", 
+                     values = met.brewer("Cross", 6, "discrete")) +
+  theme_bw() +
+  theme(
+    text = element_text(family = "Source Sans Pro"),
+    panel.border = element_rect(color = "black", linewidth = 0.4),  
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    plot.margin = margin(t = 0.2, r = 0.2, b = 0.1, l = 0.1, unit = "in"),
+    axis.title.x = element_text(color = "black", size = 7, 
+                                margin = margin(t = 0.15, unit = "in")),
+    axis.title.y = element_text(color = "black", size = 7),
+    axis.ticks = element_line(color = "black", linewidth = 0.2),
+    axis.text = element_text(color = "black", size = 7),
+    strip.text = element_text(color = "black", size = 7),
+    strip.text.x = element_text(margin = margin(t = 0.15, b = 0.05, unit = "in")),
+    strip.background = element_blank(),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 6),
+    legend.key.size = unit(0.2, "in"),
+    legend.key.spacing.y = unit(0.01, "in"),
+    legend.margin = margin(l = -0.4, unit = "in")) +
+  guides(col = guide_legend(ncol = 3, byrow = TRUE))
+
+png(paste0("./graph/", "sfig_9_did_hetro.png"), 
+    units = "in", width = 5.1, height = 6, res = 500)
+print(plot)
+dev.off()
+
+```
+<br>
+
+# Supplementary Figure 10. DiD analysis with count data
+<br>
+```{r sfig_10_count, eval=FALSE, include=FALSE}
+
+# Load data
+var_list_c <- c("opo5", "opu5", "ipo5", "ipu5", "ipday", "del")
+var_label_c <- c("Outpatient\nvisits,\naged >= 5",
+                 "Inpatient\nadmissions,\naged >= 5",
+                 "Outpatient\nvisits,\naged < 5",
+                 "Inpatient\nadmissions,\naged < 5",
+                 "Inpatient\ndays",
+                 "Institutional\nbirth")
+
+plot.dst <- var_list_c %>%
+  map(~ read_excel(paste0("./output/q_disl/", .x, "_aggte_dyn.xlsx"))) %>%
+  bind_rows() %>%
+  mutate(facl = "dist")
+
+read_data <- function(fl, vl) {
+  map_dfr(vl, ~ {
+    filepath <- paste0("./output/q_facl/", fl, "/", .x, "_aggte_dyn_", fl, ".xlsx")
+    read_excel(filepath) %>%
+      mutate(facl = fl)})
+}
+
+plot.cnt <- bind_rows(
+  map_dfr(c("all", "dh", "hc"), ~ read_data(.x, var_list_c)),
+  plot.dst)
+
+plot.cnt <- plot.cnt %>%
+  mutate(
+    outcome2 = factor(outcome, 
+                      levels = var_list_c, 
+                      labels = var_label_c),
+    facl2 = factor(facl, 
+                   levels = c("all", "dist", "dh", "hc"),
+                   labels = c("All (PH+DH+HC)", "District-level (DH+HC)", 
+                              "District hospitals", "Health centers")),
+    across(c(overall.att, overall.se, overall.conf.low, overall.conf.high), 
+           ~ ifelse(event.time < 0, NA, .)),
+    pctchange = scales::percent(overall.change, accuracy = 0.1),
+    pctchange = if_else(event.time != 0, NA, pctchange),
+    x.pctchange = max(event.time) - 1.1)
+
+write_xlsx(plot.cnt, paste0("./output/","sfig_10_did_count.xlsx"))
+
+# Plot -------------------------------------------------------------------------
+
+plot.cnt <- plot.cnt %>% filter(name == "uc.cls")
+xl <- range(plot.cnt$event.time) # x-axis length / index
+
+plot <- ggplot(
+  plot.cnt, aes(x = event.time, y = estimate)) + 
+  facet_grid(outcome2 ~ facl2, scales = "free", switch = "y") +
+  scale_x_continuous(name = "Time since NHI introduction, quarter",
+                     breaks = xl[1]:xl[2]) +
+  layer.64 +  # Add the layers
+  theme.64()  # Add the theme
+
+png(paste0("./graph/", "sfig_10_did_count.png"), 
+    units = "in", width = 4.75, height = 7, res = 500)
+print(plot)
+dev.off()
+
+```
+<br>
+
+# Supplementary Figure 11. DiD analysis using monthly data
+<br>
+```{r sfig_11_month, eval=FALSE, include=FALSE}
+
+# Load data
+plot.dyn <- var_list %>%
+  map(~ read_excel(paste0("./output/m_disl/", .x, "_aggte_dyn.xlsx"))) %>%
+  bind_rows()
+
+plot.dyn.b <- var_list %>%
+  map(~ read_excel(paste0("./output/m_disl/", .x, "_aggte_dyn_b.xlsx"))) %>%
+  bind_rows()
+
+plot.dyn.b.new <- plot.dyn %>% # into new frame
+  select(type, term, event.time, name, pretrendtype, outcome) %>%
+  left_join(plot.dyn.b, by = c("type", "term", "event.time", 
+                               "name", "pretrendtype", "outcome")) %>%
+  filter(name == "uc.cls" | name == "vc.cls") %>% 
+  mutate(name = ifelse(name == "uc.cls", "uc.clsbal", "vc.clsbal"))
+
+plot.ajt <- rbind(plot.dyn, plot.dyn.b.new) %>%
+  filter(name %in% c("uc.cls", "uc.clsbal", "uc.clslast", "u")) %>%
+  mutate(outcome2 = factor(outcome, 
+                           levels = var_list, 
+                           labels = var_label_l),
+         across(c(overall.att, overall.se, 
+                  overall.conf.low, overall.conf.high), 
+                ~ ifelse(event.time < 0, NA, .)),
+         pctchange = scales::percent(overall.change, accuracy = 0.1),
+         pctchange = if_else(event.time != 0, NA, pctchange),
+         ajttype = factor(
+           name,
+           levels = c("uc.cls", "uc.clsbal", "uc.clslast", "u"),
+           labels = c("Base model:\nLast + not-yet-treated\nno anticipation",
+                      "Balanced\nNHI exposure\n(e=0-2)",
+                      "Last treated units\nas control",
+                      "No covariate\n(unconditional PTA)"))) %>%
+  group_by(name) %>%
+  mutate(x.pctchange = max(event.time) - 4) # higher number -> move to the left
+
+write_xlsx(plot.ajt, paste0("./output/","sfig_11_did_month.xlsx"))
+
+
+# Plot -------------------------------------------------------------------------
+ 
+xl <- range(plot.ajt$event.time) # x-axis length / index
+
+plot <- ggplot(
+  plot.ajt, aes(x = event.time, y = estimate)) + 
+  facet_grid(outcome2 ~ ajttype, scales = "free", switch = "y") +
+  scale_x_continuous(name = "Time since NHI introduction, month",
+                     breaks = c(-20, -10, 0, 10)) +
+  layer.64 +  # Add the layers
+  theme.64()  # Add the theme
+
+png(paste0("./graph/", "sfig_11_did_month.png"), 
+    units = "in", width = 4.75, height = 7, res = 500)
+print(plot)
+dev.off()
+
+```
+
+# Supplementary Figure 12. Robustness to violation of parallel trends
+<br>
+```{r sfig_12_honest, eval=FALSE, include=FALSE}
+
+# Load data
+var_list_h <- var_list[1:3] # "opo5r" "ipo5r" "opu5r"
+var_label_h <- var_label_l[1:3]
+
+plot.hon <- var_list_h %>%
+  map(~ read_excel(paste0("./output/q_disl/", .x, "_honestdid.xlsx"))) %>%
+  bind_rows() %>%
+  mutate(
+    outcome2 = factor(outcome, 
+                      levels = var_list_h, 
+                      labels = var_label_h),
+    type2 = factor(type, levels = c("relative_magnitude", "smoothness"),
+                   labels = c("Relative magnitudes (M_bar)", 
+                              "Smoothness restrictions (M)")),
+    org = factor(ifelse(method == "Original", "Original", 
+                        "Robust Confidence Interval"),
+                 levels = c("Robust Confidence Interval", "Original")),
+    M = ifelse(is.na(M) & type == "relative_magnitude", 0, M)) %>%
+  dplyr::arrange(desc(type), outcome, name, desc(method), M) %>%
+  mutate(
+    seq = as.numeric(ave(ub, type, name, outcome, FUN = seq_along))) %>%
+  dplyr::arrange(desc(type), outcome, name, desc(seq)) %>%
+  group_by(type, name, outcome) %>%
+  mutate(group_id = cur_group_id()) %>%
+  ungroup()
+
+smexp <- plot.hon %>% 
+  dplyr::select(c("M", "group_id", "seq", "type")) %>%
+  filter(type == "smoothness") %>%
+  spread(., key = seq, value = M) %>%
+  mutate(`1` = `2` - `3`) %>%
+  gather(., seq, value,`1`:`11`) %>%
+  mutate(seq = as.integer(seq))
+colnames(smexp) <- c("group_id", "type", "seq", "M2")
+
+plot.hon <- plot.hon %>% 
+  left_join(smexp, by = c("group_id", "type", "seq")) %>%
+  mutate(M2 = coalesce(M2, M))
+
+write_xlsx(plot.hon, paste0("./output/", "sfig_12_did_honest.xlsx"))
+
+# Plot -------------------------------------------------------------------------
+
+plot.hon <- plot.hon %>% filter(name == "uc.cls")
+xl <- c(0, max(plot.hon$M2, na.rm=T)) # x-axis length / index
+
+plot <- ggplot(
+  plot.hon, aes(color = org)) + 
+  ggh4x::facet_grid2(outcome2 ~ type2, scales = "free", axes = "x", 
+                     independent = "x", switch = "both") +
+  geom_hline(aes(yintercept = 0), color = "black", linewidth = 0.175) +
+  geom_linerange(aes(x = M2, ymin = ub, ymax = lb), size = 0.3) +
+  scale_x_continuous(name = "Restrictions") +   
+  scale_color_manual(labels = c("Robust Confidence Interval", "Original"), 
+                     values = c("#FC4E07", "#0CAFBB")) +
+  theme_bw() +
+  theme(
+    text = element_text(family = "Source Sans Pro"),
+    panel.border = element_rect(color = "black", linewidth = 0.4),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    plot.title = element_text(color = "black", size = 8),
+    plot.margin = margin(t = 0.1, r = 0.1, b = 0.05, l = 0, unit = "in"),
+    axis.title.x = element_text(color = "black", size = 6, 
+                                margin = margin(0.15, 0, 0, 0, "in")),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_line(color = "black", linewidth = 0.2),
+    axis.ticks.x = element_line(color = "black", linewidth = 0.2),
+    axis.text.y = element_text(color = "black", size = 6),
+    axis.text.x = element_text(color = "black", size = 6),
+    strip.placement = "outside",
+    strip.text = element_text(color = "black", size = 6),
+    strip.text.y.left = element_text(angle = 0, hjust = 0, 
+                                     margin = margin(t = 0, r = 0, 
+                                                     b = 0, l = 0.05, "in")),
+    strip.text.x = element_text(margin = margin(0.03, 0, 0.03, 0, "in")),
+    strip.background = element_blank(),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 4.75),
+    legend.key.size = unit(0.15, "in"),
+    legend.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "in"),
+    legend.position = c(0.08, -0.17)) +
+  guides(col = guide_legend(nrow = 1, reverse = TRUE)) # Reverse legend order
+
+png(paste0("./graph/", "sfig_12_did_honest.png"), 
+    units = "in", width = 4, height = 3.5, res = 500)
+print(plot)
+dev.off()
+
+```
+<br>
+
+# Supplementary Figure 13. Controlled interrupted time series analyses
+<br>
+```{r sfig_13_cits, eval=FALSE, include=FALSE}
+
+its_meta_final_q <- read_excel("./output/q_disl/cits_q.xlsx")
+its_meta_final_m <- read_excel("./output/m_disl/cits_m.xlsx")
+
+its_meta_final <- rbind(its_meta_final_q, its_meta_final_m)
+
+plot.its <- its_meta_final %>%
+  filter(!dataset %in% c("model_3_q", "model_3_m")) %>%
+  mutate(outcome2 = factor(outcome, 
+                           levels = var_list, 
+                           labels = var_label_t),
+         label = factor(label, 
+                        levels = c("DID of slope (beta7)", 
+                                   "DID of level (beta6)", 
+                                   "Parallel trend (beta5)")),
+         model = factor(dataset, 
+                           levels = c("model_2_m", "model_1_m", 
+                                      "model_2_q", "model_1_q"),
+                           labels = c("Never treated, monthly", 
+                                      "Last treated, monthly", 
+                                      "Never treated, quarterly", 
+                                      "Last treated, quarterly")))
+
+write_xlsx(plot.its, "./output/sfig_13_cits.xlsx")
+
+plot <- plot.its %>%
+  ggplot(aes(y = label, x = estimate, color = model, shape = model)) + 
+  geom_point(size = 0.8, position = position_dodge2(width = 0.5)) +
+  geom_linerange(size = 0.3,aes(xmin = lowerci, xmax = upperci),
+                 position = position_dodge2(width = 0.5)) +
+  geom_vline(xintercept = 0, linetype = "dashed", size = 0.3) +
+  facet_wrap(.~outcome2, ncol = 2, scales = "free") + #
+  scale_y_discrete(
+    labels = c("Parallel trend (beta5)" =
+                 expression("Parallel trend ("*beta[5]*")"),
+               "DID of level (beta6)" = 
+                 expression("DID of level ("*beta[6]*")"),
+               "DID of slope (beta7)" = 
+                 expression("DID of slope ("*beta[7]*")"))) +
+  scale_color_manual(
+    name = "Control group, data frequency:",
+    labels = c("Never treated, monthly",
+               "Last treated, monthly",
+               "Never treated, quarterly",
+               "Last treated, quarterly"),
+    values = c("#0CAFBB", "#0CAFBB", "#FC4E07", "#FC4E07")) +
+  scale_shape_manual(
+    name = "Control group, data frequency:",
+    labels = c("Never treated, monthly",
+             "Last treated, monthly",
+             "Never treated, quarterly",
+             "Last treated, quarterly"),
+    values = c(15, 17, 15, 17)) +
+  scale_x_continuous(name = "Difference-in-differences estimates") + 
+  theme_bw() +
+  theme(
+    text = element_text(family = "Source Sans Pro"),
+    panel.border = element_rect(color = "black", linewidth = 0.4),  
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    plot.title = element_text(color = "black",size=8),
+    plot.margin = margin(t = 0.2, r = 0.2, b = 0.1, l = 0.1, unit = "in"),
+    axis.title.x = element_text(color = "black",size = 7,
+                                margin = margin(0.15, 0, 0, 0, "in")),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_line(color = "black", linewidth = 0.2),
+    axis.ticks.x = element_line(color = "black", linewidth = 0.2),
+    axis.text.y = element_text(color = 'black', size = 7),
+    axis.text.x = element_text(color = 'black', size = 7),
+    strip.text = element_text(color = 'black', size = 7),
+    strip.text.x = element_text(margin = margin(0.15, 0, 0.05, 0, "in")),
+    strip.background = element_blank(),
+    legend.position = 'bottom',
+              legend.title = element_text(size = 6),
+              legend.text = element_text(size = 6),
+              legend.key.size = unit(0.2, "in"),
+              legend.key.spacing.y = unit(0.001, "in"),
+              legend.margin = margin(t = 0, r = 0, b = 0, l = -0.1, 
+                                     unit = "in")) +
+  guides(col = guide_legend(ncol = 2, reverse = TRUE),
+         shape = guide_legend(ncol = 2, reverse = TRUE))
+
+png(paste0("./graph/", "sfig_13_cits.png"), 
+      units = "in", width = 5.5, height = 6, res = 500)
+print(plot)
+dev.off()
+
+```

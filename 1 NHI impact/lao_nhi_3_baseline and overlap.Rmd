@@ -1,0 +1,1006 @@
+---
+title: "The impact of NHI on health service utilization in Lao PDR"
+author: "Sekeun Daniel Yu (yus109@mcmaster.ca; sekeun.yu@redcross.ch)"
+date: "April/2025"
+
+---
+
+```{r knitr, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = TRUE, message = TRUE)
+
+```
+
+# Setup
+<br>
+```{r setup, echo=TRUE, message=FALSE, results="hide"}
+
+# Set working directory
+rm(list = ls(all.names = TRUE))
+#install.packages("rstudioapi")
+library(rstudioapi)
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
+getwd()
+
+# Install and load packages
+source("lao_nhi_0_package.r",echo = TRUE)
+
+```
+<br>
+
+# Load data
+<br>
+```{r load, echo=TRUE, message=FALSE, results="hide"}
+
+data.cln <- read_excel("./data export/02_clean_8_cln_q_dl.xlsx") # district
+warnings()
+str(data.cln)
+
+data <- data.cln
+
+# Check number of district
+data %>% 
+  filter(faclevel != "PH") %>% 
+  summarise(count = n_distinct(district)) # total district; 148
+
+data %>% 
+  filter(faclevel != "PH", treat == 1) %>% 
+  summarise(count = n_distinct(district)) # total district with NHI; 139
+
+data %>% 
+  group_by(province) %>% 
+  filter(faclevel != "PH") %>% 
+  summarise(count = n_distinct(district))
+
+data %>% 
+  group_by(province, district) %>% 
+  summarize(n = n()) %>% 
+  print(n = Inf)
+
+# Filter data
+data <- data %>% 
+  filter(
+    !(province %in% c("15 Xekong")), # Drop NHI pilot province
+    !(district %in% c("1008 Met", "1009 Viangkham", "1011 Mun",
+                      "1306 Nong", "1408 Samouay")), # Drop NHI pilot districts
+    !(district %in% c("0201 Phongsali")), # Drop district without CU5 in Q4/2015
+    !str_detect(faclevel, "PH"), # Remove provincial hospitals
+    !(quarter %in% c("2015.1", "2015.2", "2015.3")) # Quarters to drop
+  ) 
+
+# District with PH or HC only
+# PH: XX00
+# PSL 0205 Bounnua: HC only
+# LNT 0301 Namtha: HC only
+# ODX 0401 Xai: HC only
+# HPN 0701 Xamnua: HC only
+# XYB 0801 Xainyabouli: HC only
+# XKG 0901 Pek: HC only
+# BKX 1101 Pakxan: HC only
+# KMN 1201 Thakhek: HC only
+# SVK 1301 Kaysone Phomvihane: HC only
+# SRV 1401 Salavan: HC only 
+# SEK 1501 Lamam: HC only
+# CPS 1601 Pakxe: HC only 
+# ATP 1702 Samakhixai: HC only 
+# XSB 1801 Anouvong: HC only 
+
+# 1210 Khounkham - excluded in facility-level analysis but included in district-level analyses
+
+# Excluding these 12 districts with HC only (due to the presence of PH), increases the DID estimates by about 0.05 points.
+#data <- subset(data,District!="0205 Bounnua") # HC only
+#data <- subset(data,District!="0301 Namtha") # HC only
+#data <- subset(data,District!="0401 Xai") # HC only
+#data <- subset(data,District!="0701 Xamnua") # HC only
+#data <- subset(data,District!="0801 Xainyabouli") # HC only
+#data <- subset(data,District!="0901 Pek") # HC only
+#data <- subset(data,District!="1201 Thakhek") # HC only
+#data <- subset(data,District!="1301 Kaysone Phomvihane") # HC only
+#data <- subset(data,District!="1401 Salavan") # HC only
+#data <- subset(data,District!="1601 Pakxe") # HC only
+#data <- subset(data,District!="1702 Samakhixai") # HC only
+#data <- subset(data,District!="1801 Anouvong") # HC only
+
+# Create directories
+if(!dir.exists("./output")) {dir.create("./output")}
+if(!dir.exists("./graph")) {dir.create("./graph")}
+
+```
+<br>
+
+# Table 1. Baseline characteristics
+<br>
+```{r tbl_1, echo=TRUE, warning=TRUE}
+
+# package tableone
+# http://www.danieldsjoberg.com/gtsummary-weill-cornell-presentation/#14
+        
+colnames(data)
+str(data)
+
+# District-level population characteristics
+table1a <- data %>%
+ filter(quarter == 2015.4) %>%                     # filter unique quarter
+ filter(!group == 0) %>%                           # remove never treated
+ select(group, facnum, imps, litr, semp, urba) %>%
+ mutate(across(imps:urba, ~.x * 100)) %>%
+ mutate(treat_g = ifelse(group == 9, "Control", "Intervention")) %>%
+ tbl_strata(strata = treat_g,
+            ~tbl_summary(.x,
+                         by = group,
+                         statistic = list(
+                           facnum ~ "{sum}",
+                           facnum ~ "{mean} ({sd})",
+                           semp ~ "{mean} ({sd})",
+                           urba ~ "{mean} ({sd})",
+                           imps ~ "{mean} ({sd})",
+                           litr ~ "{mean} ({sd})"),
+                         label = list(
+                           facnum ~ "Total facilities, No.",
+                           facnum ~ "Mean facilities, No.",
+                           semp ~ "Self-employed population, %",
+                           urba ~ "Urban population, %",
+                           imps ~ "Improved sanitation, % ",
+                           litr ~ "Literacy among aged 15-64, %"),
+                         digits = list(all_continuous() ~ 1)) %>%
+              modify_header(all_stat_cols() ~ "**{level}**<br>(n={n})") %>%
+              modify_footnote(update = everything() ~ NA))  # remove footnote 1
+# modify_column_alignment(columns = everything(), align = "center")
+
+table1a
+show_header_names(table1a)
+
+# imps: Percentage of population using improved sanitation
+# litr: Literacy rate 15-64 old
+# semp: Self-employment rate
+# urba: Percentage of urban population
+
+pnumdnum <- data %>% 
+  group_by(group) %>%
+  summarize(pcount = n_distinct(province),
+            dcount = n_distinct(district)) %>%
+  mutate(pcount = as.numeric(pcount),
+         dcount = as.numeric(dcount))
+
+pdcount <- data %>% 
+  group_by(group) %>%
+  summarize(pcount = n_distinct(province),
+            dcount = n_distinct(district)) %>%
+  mutate(pcount = as.numeric(pcount),
+         dcount = as.numeric(dcount),
+         p_by_d = pcount / dcount)
+
+table1 <- data %>%
+ filter(quarter == 2016.2) %>%  # filter unique quarter
+ filter(!group == 0) %>%        # remove never treated
+ mutate(facnum2 = facnum) %>%
+ left_join(pdcount, by = c("group")) %>%
+ select(p_by_d, district, group, facnum, facnum2, semp, urba, imps, litr) %>%
+ mutate(district = 1) %>%
+ mutate(across(semp:litr, ~.x * 100))
+str(table1)
+
+table1c <- table1 %>%
+ filter(group %in% c(5, 6, 8, 9)) %>%  # remove never treated
+ tbl_summary(by = group,
+             statistic = list(
+               p_by_d ~ "{sum}",
+               district ~ "{sum}",
+               facnum ~ "{sum}",
+               facnum2 ~ "{mean} ({sd})",
+               semp ~ "{mean} ({sd})",
+               urba ~ "{mean} ({sd})",
+               imps ~ "{mean} ({sd})",
+               litr ~ "{mean} ({sd})"),
+             label = list(
+               p_by_d ~ "Province, No.",
+               district ~ "District, No.",
+               facnum ~ "Total facilities, No.",
+               facnum2 ~ "Mean facilities, No.",
+               semp ~ "Self-employed population, %",
+               urba ~ "Urban population, %",
+               imps ~ "Improved sanitation, % ",
+               litr ~ "Literacy among aged 15-64, %"),
+             digits = list(
+               p_by_d ~ 0,
+               district ~ 0,
+               facnum ~ 0,
+               facnum2 ~ 1,
+               semp ~ 1,
+               urba ~ 1,
+               imps ~ 1,
+               litr ~ 1),
+             type = list(p_by_d ~ 'continuous',
+                         district ~ 'continuous')) %>%
+#                      all_continuous() ~ 1)) %>%
+ modify_header(label = "**Variables**",
+               stat_1 ~ "G5\n(q4/2016)\nn={n}",
+               stat_2 ~ "G6\n(q1/2017)\nn={n}",
+               stat_3 ~ "G8\n(q3/2017)\nn={n}",
+               stat_4 ~ "G9\n(q4/2017)\nn={n}") %>%
+ add_overall(last = TRUE, col_label = "All control\ngroups\nn={n}") %>%
+ modify_footnote(update = everything() ~ NA)  # remove footnote 1
+# modify_column_alignment(columns = everything(), align = "center")
+table1c
+show_header_names(table1c)  # province number not correct!
+
+table1t <- table1 %>%
+ filter(!group == 9) %>%  # remove never treated
+ tbl_summary(by = group,
+             statistic = list(
+               p_by_d ~ "{sum}",
+               district ~ "{sum}",
+               facnum ~ "{sum}",
+               facnum2 ~ "{mean} ({sd})",
+               semp ~ "{mean} ({sd})",
+               urba ~ "{mean} ({sd})",
+               imps ~ "{mean} ({sd})",
+               litr ~ "{mean} ({sd})"),
+             label = list(
+               p_by_d ~ "Province, No.",
+               district ~ "District, No.",
+               facnum ~ "Total facilities, No.",
+               facnum2 ~ "Mean facilities, No.",
+               semp ~ "Self-employed population, %",
+               urba ~ "Urban population, %",
+               imps ~ "Improved sanitation, % ",
+               litr ~ "Literacy among aged 15-64, %"),
+             digits = list(
+               p_by_d ~ 0,
+               district ~ 0,
+               facnum ~ 0,
+               facnum2 ~ 1,
+               semp ~ 1,
+               urba ~ 1,
+               imps ~ 1,
+               litr ~ 1),
+             type = list(p_by_d ~ 'continuous',
+                         district ~ 'continuous')) %>%
+ modify_header(label = "**Variables**",
+               stat_1 ~ "G4\n(q3/2016)\nn={n}",
+               stat_2 ~ "G5\n(q4/2016)\nn={n}",
+               stat_3 ~ "G6\n(q1/2017)\nn={n}",
+               stat_4 ~ "G8\n(q3/2017)\nn={n}") %>%
+ add_overall(last = TRUE, col_label = "All treated\ngroups\nn={n}") %>%
+# modify_header(all_stat_cols() ~ "**{level}**\n(N={n})") %>%
+ modify_footnote(update = everything() ~ NA)  # remove footnote 1
+# modify_table_body(~.x %>% dplyr::relocate(stat_0, .after = stat_4))
+# modify_column_alignment(columns = everything(), align = "center")
+table1t
+show_header_names(table1t)  # province number not correct!
+
+tbl_merge <- 
+  tbl_merge(
+    list(table1c, table1t),
+    tab_spanner = c("**Control**", "**Intervention**")) %>%
+  modify_caption("Table 1. Characteristics of samples, by group")
+tbl_merge
+
+set_flextable_defaults(font.family = "Times New Roman")
+tbl_merge %>%
+ as_flex_table() %>%
+ save_as_docx(path = "output/tbl_1_sample_characteristics.docx",
+              pr_section = prop_section(
+                page_size = page_size(orient = "landscape")))
+
+# Add top header: Mean value (SD)
+# Note: n is the total number of district-level units. Group (G) indicates group
+
+```
+<br>
+
+## Figure 1. Population coverage by social health protection schemes from 2008 to 2021
+<br>
+```{r fig_1, echo=TRUE, message=FALSE, results="hide"}
+
+data.shp <- read_excel("./data import/lao_shp_schemes.xlsx", 
+                       sheet = "final") # district
+data.shp <- data.shp %>% 
+  pivot_longer(cols = -"scheme", names_to = "year", values_to = "population")
+
+tpop <- data.shp %>%
+  filter(scheme == "Total population") %>%
+  select(-scheme) %>%
+  rename(total_population = population, year = year)
+
+data.shp <- data.shp %>%
+  filter(scheme != "Total population") %>%
+  left_join(tpop, by = "year") %>%
+  mutate(pct = population / total_population)
+
+data.shp %>% distinct(scheme)
+
+scheme_list <- c("Formal sector Defense",
+                 "Formal sector Civil servants",
+                 "Formal sector Private employees",
+                 "Informal sector Health Equity Fund for the poor (HEF)",
+                 "Free mothers (FMAT)",
+                 "Free children under 5 (FCU5)",
+                 "Informal sector Community-based health insurance (CBHI)",
+                 "Informal sector National Health Insurance (NHI)")
+scheme_label <- c("Formal sector: Military and Police",
+                  "Formal sector: Civil servants (LSSO-SASS)",
+                  "Formal sector: Private enterprise workers (LSSO-SSO)", 
+                  "Informal sector: Health Equity Fund for the poor (HEF)",
+                  "Informal sector: Free maternity (FMAT)",
+                  "Informal sector: Free children under five (FCU5)",
+                  "Informal sector: Community-based health insurance (CBHI)",
+                  "Informal sector: National Health Insurance (NHI)")
+
+data.shp <- data.shp %>%
+  mutate(scheme2 = factor(scheme, 
+                          levels = scheme_list, 
+                          labels = scheme_label))
+
+write_xlsx(data.shp, "./output/fig_1_population_scheme.xlsx")
+
+hiro <- met.brewer("Hiroshige") # Red -> Blue
+mypalette <- hiro[c(1:5, 7:9)]
+#hoku <- met.brewer("Hokusai3")[2]
+#paqu <- met.brewer("Paquin")[7]
+#paqu <- met.brewer("Paquin")[8]
+vgh3 <- met.brewer("VanGogh3")[3]
+mypalette[1] <- vgh3
+tpopn <- 7337783
+
+# plot -------------------------------------------------------------------------
+
+plot <- ggplot(
+  data.shp, aes(fill = scheme2, y = population, x = year)) + 
+  geom_bar(position = position_stack(reverse = TRUE), 
+           color = "grey25", stat = "identity", lwd = 0.2) +
+  scale_y_continuous(limits = c(0, tpopn), expand = c(0, 0), 
+                     labels = scales::comma) +
+  scale_fill_manual(values = rev(mypalette), breaks = scheme_label) +
+  ylab("Population") + 
+  xlab("Year") +
+  annotate("text", x = 7.6, y = 3000000, label = "33%", size = 3.3) +
+  geom_segment(aes(x = 7.7, y = 2750000, xend = 8, yend = 2400000),
+               arrow = arrow(length = unit(0.05, "in")),
+               color = "grey30") +
+  annotate("text", x = 9.6, y = 7250000, label = "93%", size = 3.3) +
+  geom_segment(aes(x = 9.7, y = 7000000, xend = 10, yend = 6650000),
+               arrow = arrow(length = unit(0.05, "in")),
+               color = "grey30") +
+  theme_light() +
+  theme(
+    text = element_text(family = "Source Sans Pro"),
+    panel.border = element_blank(),  
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    axis.line = element_line(color = "black"),
+    plot.title = element_text(color = "black", vjust = 1.1, size = 10),
+    plot.margin = margin(t = 0.2, r = 0.05, b = 0.1, l = 0.1, unit = "in"),
+    axis.title.x = element_text(color = "black", size = 10, 
+                                margin = margin(0.15, 0, 0, 0, "in")),
+    axis.title.y = element_text(color = "black", vjust = 3, size = 10),
+    axis.ticks = element_line(color = "black"),
+    axis.text.y = element_text(color = "black", size = 10),
+    axis.text.x = element_text(color = "black", size = 10, vjust = 0.5),
+    legend.position = 'bottom',
+    legend.title = element_blank(),
+    legend.key.size = unit(0.2, "in"),
+    legend.key.spacing.y = unit(0.025, "in"),
+    legend.text = element_text(size = 10)) + 
+  guides(fill = guide_legend(ncol = 1, reverse = TRUE, byrow = TRUE))
+
+png("./graph/fig_1_population_scheme.png", 
+    units = "in", width = 6.3, height = 6.5, res = 400)
+print(plot)
+dev.off()
+
+```
+
+## Supplementary Figure 1. Timeline of NHI expansion from 2015 to 2019
+<br>
+```{r sfig_1, echo=TRUE, message=FALSE, results="hide"}
+
+data.cln <- read_excel("./data export/02_clean_8_cln_q_dl.xlsx") # district
+
+data.cln %>%
+ filter(faclevel != "PH") %>%
+ summarise(count = n_distinct(district))
+
+data.cln %>%
+ filter(faclevel != "PH") %>%
+ filter(pnum != 1) %>%
+ summarise(count = n_distinct(district))
+
+data.num <- data.cln %>%
+ filter(pnum != 1) %>%
+ filter(faclevel != "PH")
+
+data.num <- data.num %>%
+  select(quarter, pnum, treat, group) %>%
+  mutate(quarter = as.factor(quarter),
+         group = as.factor(group))
+unique(data.num$group)
+str(data.num)
+
+prov_label <- c("Q3 2016 (Attapeu, Luang Namtha, Xaysomboun)",
+                "Q4 2016 (Salavanh)",
+                "Q1 2017 (Bolikhamxay, Houaphanh, Xieng Khouang, Oudomxay, Phongsaly)",
+                "Q2 2017 (Sekong)",
+                "Q3 2017 (Savannakhet, Champasak)",
+                "Q4 2017 (Bokeo, Khammouane, Luang Prabang, Sayabouly, Vientiane)")
+
+data.num <- data.num %>%
+  mutate(
+    group = factor(group, labels = c("Q3 2016", "Q4 2016", "Q1 2017", 
+                                     "Q2 2017", "Q3 2017", "Q4 2017")),
+    quarter = factor(quarter, labels = c("Q4.2015", "Q1.2016", "Q2.2016", 
+                                         "Q3.2016", "Q4.2016", "Q1.2017",
+                                         "Q2.2017", "Q3.2017", "Q4.2017", 
+                                         "Q1.2018", "Q2.2018", "Q3.2018", 
+                                         "Q4.2018", "Q1.2019")),
+    group2 = factor(group, labels = prov_label))
+
+naqrt <- c("Q1.2015", "Q2.2015", "Q3.2015", "Q4.2015", "Q1.2016", "Q2.2016")
+total <- data.num %>%
+  group_by(quarter) %>%
+  summarise(count = sum(treat)) %>%
+  mutate(count = replace(count, quarter %in% naqrt, NA))
+
+mypalette <- met.brewer("Hokusai3", 6, "discrete") # Paquin / Hiroshige
+names(mypalette) <- prov_label
+
+# Legend with province names (aggregated blocked), bar outline
+data.num2 <- data.num %>%
+  group_by(group2, quarter) %>%
+  summarise(count = sum(treat)) %>%
+  setNames(c("intv_group", "quarter", "count"))
+
+write_xlsx(data.num2, "./output/sfig_1_district_num.xlsx")
+
+plot <- ggplot(
+  data.num2, aes(fill = intv_group, y = count, x = quarter)) + 
+  geom_bar(position = position_stack(reverse = TRUE), 
+           color = "grey25", stat = "identity", lwd = 0.2) +
+  geom_text(aes(x = quarter, y = count + 5, label = count, fill = NULL), 
+            data = total, size = 3, fontface = "italic") +
+  scale_y_continuous(limits = c(0, 155), expand = c(0, 0)) +
+  scale_fill_manual(
+    values = mypalette,
+    breaks = prov_label) +
+  labs(fill = "NHI Introduction (province)", 
+       y = "Number of districts", 
+       x = "Quarter") +
+  theme_light() +
+  theme(
+    text = element_text(family = "Source Sans Pro"), # Font style
+    panel.border = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    axis.line = element_line(color = "black"),
+    plot.title = element_text(color = "black", vjust = 1.1, size = 10),
+    plot.margin = margin(t = 0.2, r = 0.05, b = 0.1, l = 0.1, unit = "in"),
+    axis.title.x = element_text(color = "black", size = 10, 
+                                margin = margin(t = 0.15, unit = "in")),
+    axis.title.y = element_text(color = "black", vjust = 2, size = 10),
+    axis.ticks = element_line(color = "black"),
+    axis.text.y = element_text(color = "black", size = 10),
+    axis.text.x = element_text(color = "black", size = 9.5, 
+                               angle = 45, vjust = 0.75, hjust = 0.75),
+    legend.title = element_text(color = "black", size = 10, 
+                                margin = margin(b = 0.07, unit = "in")),
+    legend.key.size = unit(0.2, "in"),
+    legend.key.spacing.y = unit(0.025, "in"),
+    legend.text = element_text(size = 10)) +
+  guides(fill = guide_legend(byrow = TRUE))
+
+png(paste("./graph/sfig_1_district_num.png", sep = ""), units = "in",
+    width = 9.5, height = 4.5, res = 500)
+print(plot)
+dev.off()
+
+```
+<br>
+
+## Supplementary Figure 2. Propensity score distribution by control group
+<br>
+```{r sfig_2, echo=TRUE, fig.height=2.5, fig.width=5}
+
+# Reference
+# https://cran.r-project.org/web/packages/cobalt/vignettes/cobalt.html#why-cobalt
+# https://ngreifer.github.io/WeightIt/articles/WeightIt.html
+
+# overlap 1: treated vs never-treated group
+# ------------------------------------------------------------------------------
+
+data.ovl <- data %>%
+  filter(quarter == 2015.4) %>%              
+  mutate(psgroup = ifelse(group > 0, 1, 0))
+
+pscore.tr <- stats::glm(psgroup ~ logfacn + semp + urba + litr + imps,
+                        family = "binomial", data = data.ovl)
+ps.fit <- as.vector(pscore.tr$fitted.values)
+ps.fit2 <- pmin(ps.fit, 1 - 1e-16)  # Adjust fitted values to avoid extremes
+
+stat.ovl <- WeightIt::weightit(
+  psgroup ~ logfacn + semp + urba + litr + imps,
+  data = data.ovl,
+  method = "glm",
+  estimand = "ATT")
+
+bal.tab(stat.ovl)
+bal.plot(stat.ovl, var.name = "prop.score", 
+         which = "both", type = "histogram", mirror = TRUE)
+         # "both" shows unajusted and adjusted results
+bal.plot(stat.ovl, var.name = "prop.score", 
+         which = "both", mirror = FALSE) # "unadjusted" only shows adjusted results
+
+
+# overlap 2: treated vs last treated cohort as control
+# ------------------------------------------------------------------------------
+
+data.ovl2 <- data %>%
+  filter(group > 0) %>%                         # drop group = 0
+  filter(quarter == 2015.4) %>%                 # filter unique quarter
+  mutate(psgroup = ifelse(group == 9, 0, 1))    # last cohort as control
+        
+stat.ovl2 <- WeightIt::weightit(
+  psgroup ~ logfacn + semp + urba + litr + imps,
+  data = data.ovl2,
+  method = "glm",
+  estimand = "ATT")
+
+bal.tab(stat.ovl2)
+bal.plot(stat.ovl2, var.name = "prop.score", 
+         which = "both", type = "histogram", mirror = TRUE)
+bal.plot(stat.ovl2, var.name = "prop.score",
+         which = "both", mirror = FALSE) # "unadjusted" only shows adjusted results
+
+
+# overlap 3: treated vs last treated cohort + not-yet-treated as control
+# ------------------------------------------------------------------------------
+
+data.ovl2 <- data %>%
+  filter(group > 0) %>%                         # drop group=0
+  filter(quarter == 2015.4) %>%                 # filter unique quarter
+  mutate(psgroup = ifelse(group == 9, 0, 1))    # last cohort as control
+
+data.ovlnyt <- data.ovl2 %>%                    # extract
+  filter(psgroup > 0) %>%                       # filter nyt group
+  filter(group > 4) %>%                         # exclude the first treated
+  mutate(psgroup = ifelse(psgroup == 1, 0, 0))  # nyt cohort as control
+
+data.ovl3 <- rbind(data.ovl2, data.ovlnyt)      # combine dataset
+        
+stat.ovl3 <- WeightIt::weightit(
+  psgroup ~ logfacn + semp + urba + litr + imps,
+  data=data.ovl3,
+  method = "glm",
+  estimand = "ATT")
+
+summary(stat.ovl3)
+bal.tab(stat.ovl3)
+bal.plot(stat.ovl3, var.name = "prop.score", 
+         which = "both", type = "histogram", mirror = TRUE)
+bal.plot(stat.ovl3, var.name = "prop.score",
+         which = "both", mirror = FALSE) # "unadjusted" only shows adjusted results
+         
+love.plot(stat.ovl3, binary = "std", thresholds = c(m = .1))
+
+# overlap 4: treated vs never-treated + all not-yet-treated group
+# ------------------------------------------------------------------------------
+
+data.ovlnvt <- data %>%
+  filter(group == 0) %>%                   # keep never-treated group
+  filter(quarter == 2015.4) %>%
+  mutate(psgroup = 0)
+data.ovl4 <- rbind(data.ovl3, data.ovlnvt) # combine dataset
+
+stat.ovl4 <- WeightIt::weightit(
+  psgroup ~ logfacn + semp + urba + litr + imps,
+  data = data.ovl4,
+  method = "glm",
+  estimand = "ATT")
+
+bal.tab(stat.ovl4)
+bal.plot(stat.ovl4, var.name = "prop.score",
+         which = "both", type = "histogram", mirror = TRUE)
+bal.plot(stat.ovl4, var.name = "prop.score",
+         which = "both", mirror = FALSE) # "unadjusted" only shows adjusted results
+
+
+# Plots ------------------------------------------------------------------------
+
+plot.ovl1 <- cbind.data.frame(stat.ovl$ps, stat.ovl$weights, 
+                              stat.ovl$treat, "nvt")
+plot.ovl2 <- cbind.data.frame(stat.ovl2$ps, stat.ovl2$weights, 
+                              stat.ovl2$treat, "last")
+plot.ovl3 <- cbind.data.frame(stat.ovl3$ps, stat.ovl3$weights, 
+                              stat.ovl3$treat, "lastnyt")
+
+plot.ovl.all <- lapply(
+ list(plot.ovl1, plot.ovl2, plot.ovl3),
+ setNames, c("ps", "weight", "treat", "control_type")) %>%
+ do.call(rbind, .) %>%
+ mutate(
+   control_type = factor(control_type,
+                  levels = c("lastnyt", "last", "nvt"),
+                  labels = c("Later treated\n(not yet + last treated)",
+                             "Last treated", "Never treated")),
+   group = factor(treat,
+                   levels = c(0, 1),
+                   labels = c("Control", "Intervention")))
+
+write_xlsx(plot.ovl.all, "./output/sfig_2_overlap.xlsx")
+
+theme.ps <- function() {
+ theme_bw() +
+ theme(
+   text = element_text(family = "Source Sans Pro"),
+   panel.grid.major.x = element_blank(),
+   panel.grid.major.y = element_blank(),
+   panel.grid.minor = element_blank(),
+   panel.background = element_blank(),
+   plot.title = element_text(color = "black", hjust = 0.5, size = 8,
+                             family = "Source Sans Pro"),
+   axis.title.x = element_text(color = "black", vjust = -1.1, size = 7),
+   axis.title.y = element_text(color = "black", vjust = 2, size = 7),
+   axis.text.x = element_text(size = 6),
+   axis.text.y = element_text(size = 6),
+   axis.ticks.y = element_line(color = "black", linewidth = 0.25),
+   axis.ticks.x = element_line(color = "black", linewidth = 0.25),
+   strip.text = element_text(color = "black", size = 7),
+   strip.text.x = element_text(margin = margin(0.04, 0, 0.04, 0, "in")),
+   strip.background = element_blank(),
+   legend.title = element_blank(),
+   legend.text = element_text(size = 7),
+   legend.key.size = unit(0.15, "in"),
+   legend.key.height = unit(0.05, "in"),
+   legend.position = c(0.15, -0.14),
+   legend.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "in"),
+   legend.key.width = unit(0.05, "in"))
+}
+
+# Plot with legend, scale fixed
+plot.ovl.mirror.fix <- ggplot() +
+ geom_histogram(data = subset(plot.ovl.all, treat == 0),
+                aes(x = ps, y = after_stat(count / sum(count)),
+                    fill = "Control"),
+                bins = 30, col = "black", lwd = 0.2) +
+ geom_histogram(data = subset(plot.ovl.all, treat == 1),
+                aes(x = ps, y = -after_stat(count / sum(count)),
+                    fill = "Intervention"),
+                bins = 30, col = "black", lwd = 0.2) +
+ facet_wrap(~control_type, ncol = 3) +
+ scale_y_continuous(name = "Proportion") +
+ scale_x_continuous(name = "Propensity score",
+                    limits = c(-0.1, 1.1), seq(0, 1, by = 0.2)) +
+ scale_fill_manual(
+   values = c("Control" = "#F8766D", "Intervention" = "#9bd1a4"),
+   guide = guide_legend(reverse = TRUE, nrow = 1)) +
+ theme.ps()
+
+plot.ovl.mirror.fix
+
+png("./graph/sfig_2_overlap.png",
+    units = "in", width = 5, height = 2.5, res = 400)
+print(plot.ovl.mirror.fix)
+dev.off()
+
+```
+<br>
+
+## F. Health service utilization trends
+<br>
+```{r pta, echo=TRUE, warning=TRUE}
+
+# By intervention group/cohort
+outname <- c("opo5r", "opu5r", "ipo5r", "ipu5r", "iplos", "delr")
+
+table1_cohort <- data %>%
+ filter(quarter >= 2015.4 & quarter <= 2017.3) %>%
+ subset(., province != "01 Vientiane Capital")  # Drop Vientiane Capital
+
+head(table1_cohort)
+
+group_list <- list()
+t_total_list <- list()
+c_total_list <- list()
+total_list <- list()
+
+for (i in 1:length(outname)) {
+ outn <- rlang::sym(outname[i])
+ group_list[[i]] <- list()
+ t_total_list[[i]] <- list()
+ c_total_list[[i]] <- list()
+ total_list[[i]] <- list()
+
+ for (j in c(4, 5, 6, 8)) {
+   group_list[[i]][[j]] <- list()
+   t_total_list[[i]][[j]] <- list()
+   c_total_list[[i]][[j]] <- list()
+
+   # Intervention group
+   group_t <- table1_cohort %>%
+     mutate(group.new = j) %>%
+     mutate(event.time = time - group.new) %>%
+     filter(group == j) %>%
+     group_by(group, event.time) %>%
+     summarise(util.mean = mean(!!outn, na.rm = TRUE),
+               util.sd = sd(!!outn, na.rm = TRUE),
+               util.num = n()) %>%
+     mutate(util.se = util.sd / sqrt(util.num),
+            util.lower.ci = util.mean - qt(1 - (0.05 / 2), util.num - 1) * util.se,
+            util.upper.ci = util.mean + qt(1 - (0.05 / 2), util.num - 1) * util.se) %>%
+     mutate(intv = "Intervention")
+
+   # Control group
+   group_c <- table1_cohort %>%
+     mutate(group.new = j) %>%
+     mutate(event.time = time - group.new) %>%
+     filter(group > j) %>%
+     filter(event < 0) %>%
+     group_by(event.time) %>%
+     summarise(util.mean = mean(!!outn, na.rm = TRUE),
+               util.sd = sd(!!outn, na.rm = TRUE),
+               util.num = n()) %>%
+     mutate(util.se = util.sd / sqrt(util.num),
+            util.lower.ci = util.mean - qt(1 - (0.05 / 2), util.num - 1) * util.se,
+            util.upper.ci = util.mean + qt(1 - (0.05 / 2), util.num - 1) * util.se) %>%
+     mutate(group = j) %>%
+     mutate(intv = "Control")
+
+   group_tc <- rbind(group_t, group_c)
+   group_tc$outcome <- outname[i]
+   group_tc$util.sd <- NULL
+   group_list[[i]][[j]] <- group_tc
+
+   # Total
+   t_total <- table1_cohort %>%
+     mutate(group.new = j) %>%
+     mutate(event.time = time - group.new) %>%
+     filter(group == j)
+
+   t_total_list[[i]][[j]] <- t_total
+
+   c_total <- table1_cohort %>%
+     mutate(group.new = j) %>%
+     mutate(event.time = time - group.new) %>%
+     filter(group > j) %>%
+     filter(event < 0)
+
+   c_total_list[[i]][[j]] <- c_total
+ }
+
+ # Combined all possible control units
+ t_total_unlist <- unlist(t_total_list[i], recursive = FALSE)
+ t_total_bind <- do.call("rbind", t_total_unlist)
+
+ c_total_unlist <- unlist(c_total_list[i], recursive = FALSE)
+ c_total_bind <- do.call("rbind", c_total_unlist)
+
+ t_total_comb <- t_total_bind %>%
+   group_by(event.time) %>%
+   summarise(util.mean = mean(!!outn, na.rm = TRUE),
+             util.sd = sd(!!outn, na.rm = TRUE),
+             util.num = n()) %>%
+   mutate(util.se = util.sd / sqrt(util.num),
+          util.lower.ci = util.mean - qt(1 - (0.05 / 2), util.num - 1) * util.se,
+          util.upper.ci = util.mean + qt(1 - (0.05 / 2), util.num - 1) * util.se) %>%
+   mutate(intv = "Intervention")
+
+ c_total_comb <- c_total_bind %>%
+   group_by(event.time) %>%
+   summarise(util.mean = mean(!!outn, na.rm = TRUE),
+             util.sd = sd(!!outn, na.rm = TRUE),
+             util.num = n()) %>%
+   mutate(util.se = util.sd / sqrt(util.num),
+          util.lower.ci = util.mean - qt(1 - (0.05 / 2), util.num - 1) * util.se,
+          util.upper.ci = util.mean + qt(1 - (0.05 / 2), util.num - 1) * util.se) %>%
+   mutate(intv = "Control")
+
+ tc_total <- rbind(t_total_comb, c_total_comb)
+ tc_total$outcome <- outname[i]
+ tc_total$util.sd <- NULL
+ total_list[[i]] <- tc_total
+}
+
+# Control group trends appear similar across cohorts but differ subtly in early event.time periods. In the later post-NHI period (event time 3–4), the trends are identical because units being used are small and identical, mainly from groups 8 and 9 (last treated). Calculations are correct.
+
+group_unlist <- unlist(group_list, recursive = FALSE)
+total_bind <- do.call("rbind", total_list)
+group_bind <- do.call("rbind", group_unlist)
+
+# write_xlsx(total_bind,"./output/sfig_2_pta_qrt_total.xlsx")
+# write_xlsx(group_bind,"./output/sfig_3_pta_qrt_group.xlsx")
+
+# Total
+# Averaging all units directly vs. averaging by group with weights should yield 
+# identical results
+
+CS_compute <- group_bind %>%
+ group_by(event.time, intv, outcome) %>%
+ mutate(weight = util.num / sum(util.num)) %>%
+ mutate(avgdyn = sum(util.mean * weight)) %>%
+ dplyr::select(c("event.time", "intv", "outcome", "avgdyn")) %>%
+ unique() %>%
+ arrange(outcome, intv, event.time)
+
+CS_crosscheck <- left_join(CS_compute, total_bind,
+                           by = c("event.time", "intv", "outcome")) %>%
+  dplyr::select(contains(c("avgdyn", "util.mean"))) %>%
+  print(n = Inf)
+
+# The results are identical
+# Average of all units from each cohort by event time is equivalent to
+# 1) average by cohort, and 2) average with weighting by unit size (CS code)
+
+
+```
+
+# Supplementary Figure 3. Quarterly health service utilization trends, overall
+<br>
+```{r sfig_3, echo=TRUE, warning=TRUE}
+
+var_list <- c("opo5r", "ipo5r", "opu5r", "ipu5r", "iplos", "delr")
+var_label <- c("Outpatient visits per 1000, aged >= 5",
+               "Inpatient admissions per 100 000, aged >= 5",
+               "Outpatient visits per 1000, aged < 5",
+               "Inpatient admissions per 100 000, aged < 5",
+               "Inpatient average length of stay",
+               "Institutional birth rate")
+
+total_bind <- total_bind %>%
+  mutate(outcome2 = factor(outcome, 
+                           levels = var_list, 
+                           labels = var_label))
+
+xl <- c(min(total_bind$event.time), # x-axis length / index
+          max(total_bind$event.time))
+
+write_xlsx(total_bind,"./output/sfig_3_pta_overall.xlsx")
+
+plot <- ggplot(
+  total_bind, aes(x = event.time, y = util.mean, 
+                  group = intv, color = intv)) + 
+  facet_wrap(~outcome2, ncol = 2, scales = "free") + 
+  geom_vline(
+    aes(xintercept = 0), linetype = "dashed", 
+    color = "black", alpha = 0.9, linewidth = 0.05) +
+  geom_ribbon(
+    data = subset(total_bind, intv == "Intervention"),
+    aes(ymin = util.lower.ci, ymax = util.upper.ci),
+    fill = "#c5dec9", color = "#bad9bf", alpha = 0.65, 
+    linetype = 1, linewidth = 0.025) +
+  geom_ribbon(
+    data = subset(total_bind, intv == "Control"),
+    aes(ymin = util.lower.ci, ymax = util.upper.ci),
+    fill = "#f5cdc6", color = "#f5beb5", alpha = 0.8, 
+    linetype = 1, linewidth = 0.025) +
+  geom_point(data = subset(total_bind, intv == "Control"), size = 0.6) +
+  geom_line(data = subset(total_bind, intv == "Control"), linewidth = 0.3) +
+  geom_point(data = subset(total_bind, intv == "Intervention"), size = 0.6) +
+  geom_line(data = subset(total_bind, intv == "Intervention"), linewidth = 0.3) +
+  scale_y_continuous(name = "Health service utilization") +
+  scale_x_continuous(name = "Time since NHI introduction, quarter", 
+                     breaks = xl[1]:xl[2]) +
+  scale_color_manual(values = c("Control" = "#e85238", "Intervention" = "#006918"),
+                     guide = guide_legend(reverse = TRUE, nrow = 1)) +
+  theme_bw() +
+  theme(
+    text = element_text(family = "Source Sans Pro"),
+    panel.border = element_rect(color = "black", linewidth = 0.4),
+    panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+    plot.title = element_text(color = "black", size = 8),
+    plot.margin = margin(t = 0.2, r = 0.2, b = 0.1, l = 0.1, unit = "in"),
+    axis.title.x = element_text(color = "black", size = 7, 
+                                margin = margin(0.15, 0, 0, 0, "in")),
+    axis.title.y = element_text(color = "black", size = 7),
+    axis.ticks = element_line(color = "black", linewidth = 0.2),
+    axis.text = element_text(color = "black", size = 7),
+    strip.text = element_text(color = "black", size = 7),
+    strip.text.x = element_text(margin = margin(0.15, 0, 0.05, 0, "in")),
+    strip.background = element_blank(),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 6),
+    legend.key.size = unit(0.2, "in"),
+    legend.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "in"),
+    legend.position = "inside", 
+    legend.position.inside =  c(0.1, -0.067)
+  )
+
+png("graph/sfig_3_pta_overall.png", 
+    units = "in", width = 5.1, height = 6, res = 500)
+print(plot)
+dev.off()
+
+```
+
+# Supplementary Figure 4. Quarterly health service utilization trends by intervention group
+<br>
+```{r sfig_4, echo=TRUE, warning=TRUE}
+
+var_list <- c("opo5r", "ipo5r", "opu5r", "ipu5r", "iplos", "delr")
+var_label_l <- c("Outpatient\nvisits\nper 1000,\naged >= 5",
+                 "Inpatient\nadmissions\nper 100 000,\naged >= 5",
+                 "Outpatient\nvisits\nper 1000,\naged < 5",
+                 "Inpatient\nadmissions\nper 100 000, \naged < 5",
+                 "Inpatient\naverage\nlength\nof stay",
+                 "Institutional\nbirth\nrate")
+
+group_bind <- group_bind %>%
+  mutate(cohort = factor(group, 
+                         levels = c(4, 5, 6, 8),
+                         labels = c("NHI introduced in \nQ3/2016\nN=15",
+                                    "NHI introduced in \nQ4/2016\nN=7",
+                                    "NHI introduced in \nQ1/2017\nN=37",
+                                    "NHI introduced in \nQ3/2017\nN=24")),
+         outcome2 = factor(outcome, levels = var_list, labels = var_label_l))
+
+xl <- c(min(group_bind$event.time), # x-axis length / index
+          max(group_bind$event.time))
+
+write_xlsx(group_bind,"./output/sfig_4_pta_cohort.xlsx")
+
+plot <- ggplot(
+  group_bind, aes(x = event.time, y = util.mean, group = intv, color = intv)) +
+  facet_grid(outcome2 ~ cohort, scales = "free", switch = "y") +
+  geom_vline(aes(xintercept = 0), linetype = "dashed", 
+             color = "black", alpha = 0.9, linewidth = 0.05) +
+  geom_ribbon(data = subset(group_bind, intv == "Intervention"),
+              aes(x = event.time, ymin = util.lower.ci, ymax = util.upper.ci),
+              fill = "#c5dec9", color = "#bad9bf", alpha = 0.65, 
+              linetype = 1, linewidth = 0.025) +
+  geom_ribbon(data = subset(group_bind, intv == "Control"),
+              aes(x = event.time, ymin = util.lower.ci, ymax = util.upper.ci),
+              fill = "#f5cdc6", color = "#f5beb5", alpha = 0.8, 
+              linetype = 1, linewidth = 0.025) +
+  geom_point(data = subset(group_bind, intv == "Control"), 
+             aes(x = event.time, y = util.mean), size = 0.6) +
+  geom_line(data = subset(group_bind, intv == "Control"), 
+            aes(x = event.time, y = util.mean), linewidth = 0.3) +
+  geom_point(data = subset(group_bind, intv == "Intervention"), 
+             aes(x = event.time, y = util.mean), size = 0.6) +
+  geom_line(data = subset(group_bind, intv == "Intervention"), 
+            aes(x = event.time, y = util.mean), linewidth = 0.3) +
+  scale_y_continuous(name = "Health service utilization") +
+  scale_x_continuous(name = "Time since NHI introduction, quarter",
+                     breaks = xl[1]:xl[2]) +
+  scale_color_manual(values = c("Control" = "#e85238", 
+                                "Intervention" = "#006918"),
+                     guide = guide_legend(reverse = TRUE, nrow = 1)) +
+  theme_bw() +
+  theme(
+    text = element_text(family = "Source Sans Pro"),
+    panel.border = element_rect(color = "black", linewidth = 0.4),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_blank(),
+    plot.title = element_text(color = "black", size = 8),
+    plot.margin = margin(t = 0.1, r = 0.1, b = 0.1, l = 0, unit = "in"),
+    axis.title.x = element_text(
+      color = "black", size = 7, margin = margin(0.15, 0, 0, 0, "in")),
+    axis.title.y = element_blank(),
+    axis.ticks.y = element_line(color = "black", linewidth = 0.2),
+    axis.ticks.x = element_line(color = "black", linewidth = 0.2),
+    axis.text.y = element_text(color = "black", size = 7),
+    axis.text.x = element_text(color = "black", size = 7),
+    strip.placement = "outside",
+    strip.text = element_text(color = "black", size = 7),
+    strip.text.y.left = element_text(
+      angle = 0, hjust = 0, 
+      margin = margin(t = 0, r = 0, b = 0, l = 0.05, "in")),
+    strip.text.x = element_text(
+      margin = margin(0.15, 0, 0.05, 0, "in")),
+    strip.background = element_blank(),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 6),
+    legend.key.size = unit(0.2, "in"),
+    legend.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "in"),
+    legend.position = "inside", 
+    legend.position.inside =  c(0.05, -0.057)
+  )
+
+png("graph/sfig_4_pta_cohort.png",
+    units = "in",width = 4.75, height = 7, res = 500)
+print(plot)
+dev.off()
+
+```
+

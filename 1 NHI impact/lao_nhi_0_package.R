@@ -1,18 +1,10 @@
----
-title: "The impact of NHI on health service utilization in Lao PDR"
-author: "Sekeun Daniel Yu (yus109@mcmaster.ca; sekeun.yu@redcross.ch)"
-date: "March/2025"
----
-
-```{r knitr, include=FALSE}
+## ----knitr, include=FALSE------------------------------------------------------------------
 
 knitr::opts_chunk$set(echo = TRUE)
 
-```
 
-# Install and load packages
-<br>
-```{r packages, echo=TRUE, message=FALSE, results="hide"}
+
+## ----packages, echo=TRUE, message=FALSE, results="hide"------------------------------------
 
 # Set working directory
 library(rstudioapi)
@@ -98,10 +90,7 @@ options(nwarnings = 10000)
 options()$nwarnings
 
 # Generate R script
-knitr::purl("Lao_NHI_00_package.Rmd", output = "Lao_NHI_00_package.R")
+knitr::purl("lao_nhi_0_package.Rmd", output = "lao_nhi_0_package.R")
 
-
-```
-<br>
 
 
