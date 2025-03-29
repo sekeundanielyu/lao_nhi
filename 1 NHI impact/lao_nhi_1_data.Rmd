@@ -1,33 +1,33 @@
 ---
 title: "The impact of NHI on health service utilization in Lao PDR"
-author: "Sekeun Daniel Yu (yus109@mcmaster.ca; sekeun.yu@redcross.ch)"
+author: "Sekeun Daniel Yu (yus109@mcmaster.ca)"
 date: "April/2025"
 
 ---
 
 ```{r knitr, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = TRUE, message = TRUE)
 
 ```
 
-## Setup
+# Setup
 <br>
 ```{r Setup, echo=TRUE, message=FALSE, results="hide"}
 
-# set up
+# Set working directory
 rm(list = ls(all.names = TRUE))
 #install.packages("rstudioapi")
 library(rstudioapi)
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 getwd()
 
-# install and load packages
+# Install and load packages
 source("lao_nhi_0_package.r", echo = TRUE)
 
 ```
 <br>
 
-## outpatient, inpatient, maternity data
+# outpatient, inpatient, maternity data
 <br>
 ```{r opd_ipd_mch, echo=TRUE, message=FALSE, results='hide'}
 
@@ -152,7 +152,7 @@ write_xlsx(data_mch, "./data export/lao_nhi_01_data_mch.xlsx")
 ```
 <br>
 
-## EPI and growth data
+# EPI and growth data
 <br>
 ```{r epi_growth, echo=TRUE, message=FALSE, results='hide'}
 
@@ -206,7 +206,7 @@ write_xlsx(data_growth, "./data export/lao_nhi_01_data_growth.xlsx")
 
 ```
 
-## Population data
+# Population data
 <br>
 ```{r Population data, echo=TRUE}
 

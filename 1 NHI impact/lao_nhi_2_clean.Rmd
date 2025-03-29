@@ -1,12 +1,12 @@
 ---
 title: "The impact of NHI on health service utilization in Lao PDR"
-author: "Sekeun Daniel Yu (yus109@mcmaster.ca; sekeun.yu@redcross.ch)"
+author: "Sekeun Daniel Yu (yus109@mcmaster.ca)"
 date: "April/2025"
 
 ---
 
 ```{r knitr, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = TRUE, message = TRUE)
 
 ```
 
@@ -14,14 +14,14 @@ knitr::opts_chunk$set(echo = TRUE)
 <br>
 ```{r setup, echo=TRUE, message=FALSE, results="hide"}
 
-# set up
+# Set working directory
 rm(list = ls(all.names = TRUE))
 #install.packages("rstudioapi")
 library(rstudioapi)
 setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 getwd()
 
-# install and load packages
+# Install and load packages
 source("lao_nhi_0_package.r", echo = TRUE)
 
 ```
