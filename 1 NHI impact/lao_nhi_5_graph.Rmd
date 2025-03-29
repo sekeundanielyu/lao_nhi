@@ -447,7 +447,7 @@ plot.dyn.b.new <- plot.dyn %>% # into new frame
   mutate(name = ifelse(name == "uc.cls","uc.clsbal", "vc.clsbal"))
 
 plot.ajt <- rbind(plot.dyn, plot.dyn.b.new) %>%
-  filter(name %in% c("uc.cls", "uc.clsbal", "uc.clslast", "u")) %>%
+  filter(name %in% c("uc.cls", "uc.clsbal", "uc.clslast", "u.cls")) %>%
   mutate(outcome2 = factor(outcome, 
                            levels = var_list, 
                            labels = var_label_l),
@@ -458,7 +458,7 @@ plot.ajt <- rbind(plot.dyn, plot.dyn.b.new) %>%
          pctchange = if_else(event.time != 0, NA, pctchange),
          ajttype = factor(
            name,
-           levels = c("uc.cls", "uc.clsbal", "uc.clslast", "u"),
+           levels = c("uc.cls", "uc.clsbal", "uc.clslast", "u.cls"),
            labels = c("Base model:\nLast + not-yet-treated\nno anticipation",
                       "Balanced\nNHI exposure\n(e=0-2)",
                       "Last treated units\nas control",
