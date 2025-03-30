@@ -4174,6 +4174,16 @@ for (i in 1:length(var.names)) {
     mutate(!!var1 := ifelse(is.infinite(!!var1), 0, !!var1))
 }
 
+data.m.dl.stat <- lapply(var.names, function(var) {
+  data <- data.m.dl[[var]]
+  data.frame(indicator = var,
+             non_NA = sum(!is.na(data)),
+             zeros = sum(data == 0, na.rm = TRUE),
+             NA_cnt = sum(is.na(data)),
+             inf = sum(is.infinite(data)))
+}) %>% bind_rows()
+data.m.dl.stat
+
 # Save clean data
 data.cln.m.dl <- data.m.dl # district-level
 write_xlsx(data.cln.m.dl, "./data export/02_clean_8_cln_m_dl.xlsx") 
@@ -4257,6 +4267,16 @@ for (i in 1:length(var.names)) {
   data.m.fl <<- data.m.fl %>%
     mutate(!!var1 := ifelse(is.infinite(!!var1), 0, !!var1))
 }
+
+data.m.fl.stat <- lapply(var.names, function(var) {
+  data <- data.m.fl[[var]]
+  data.frame(indicator = var,
+             non_NA = sum(!is.na(data)),
+             zeros = sum(data == 0, na.rm = TRUE),
+             NA_cnt = sum(is.na(data)),
+             inf = sum(is.infinite(data)))
+}) %>% bind_rows()
+data.m.fl.stat
 
 # Save clean data
 data.cln.m.fl <- data.m.fl # facility-level
@@ -4377,6 +4397,16 @@ for (i in 1:length(var.names)) {
     mutate(!!var1 := ifelse(is.infinite(!!var1), 0, !!var1))
 }
 
+data.q.dl.stat <- lapply(var.names, function(var) {
+  data <- data.q.dl[[var]]
+  data.frame(indicator = var,
+             non_NA = sum(!is.na(data)),
+             zeros = sum(data == 0, na.rm = TRUE),
+             NA_cnt = sum(is.na(data)),
+             inf = sum(is.infinite(data)))
+}) %>% bind_rows()
+data.q.dl.stat
+
 # Save clean data
 data.cln.q.dl <- data.q.dl  # district-level
 write_xlsx(data.cln.q.dl, "./data export/02_clean_8_cln_q_dl.xlsx")
@@ -4460,6 +4490,16 @@ for (i in 1:length(var.names)) {
   data.q.fl <<- data.q.fl %>%
     mutate(!!var1 := ifelse(is.infinite(!!var1), 0, !!var1))
 }
+
+data.q.fl.stat <- lapply(var.names, function(var) {
+  data <- data.q.fl[[var]]
+  data.frame(indicator = var,
+             non_NA = sum(!is.na(data)),
+             zeros = sum(data == 0, na.rm = TRUE),
+             NA_cnt = sum(is.na(data)),
+             inf = sum(is.infinite(data)))
+}) %>% bind_rows()
+data.q.fl.stat
 
 # Save clean data
 data.cln.q.fl <- data.q.fl # facility-level
