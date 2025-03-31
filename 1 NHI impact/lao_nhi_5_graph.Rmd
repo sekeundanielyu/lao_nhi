@@ -575,8 +575,8 @@ dev.off()
 
 # Load data
 var_list_c <- c("opo5", "opu5", "ipo5", "ipu5", "ipday", "del")
-var_label_c <- c("Outpatient\nvisits,\naged >= 5",
-                 "Inpatient\nadmissions,\naged >= 5",
+var_label_c <- c("Outpatient\nvisits,\naged ≥ 5",
+                 "Inpatient\nadmissions,\naged ≥ 5",
                  "Outpatient\nvisits,\naged < 5",
                  "Inpatient\nadmissions,\naged < 5",
                  "Inpatient\ndays",
@@ -751,8 +751,7 @@ xl <- c(0, max(plot.hon$M2, na.rm=T)) # x-axis length / index
 plot <- ggplot(
   plot.hon, aes(color = org)) + 
   ggh4x::facet_grid2(outcome2 ~ type2, scales = "free", axes = "x", 
-                     independent = "x", switch = "both",
-                     labeller = labeller(type2 = type2_labels)) +
+                     independent = "x", switch = "both") +
   geom_hline(aes(yintercept = 0), color = "black", linewidth = 0.175) +
   geom_linerange(aes(x = M2, ymin = ub, ymax = lb), size = 0.3) +
   scale_x_continuous(name = "Restrictions") +   

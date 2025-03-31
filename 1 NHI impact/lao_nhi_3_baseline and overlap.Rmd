@@ -838,8 +838,8 @@ CS_crosscheck <- left_join(CS_compute, total_bind,
 ```{r sfig_3, echo=TRUE, warning=TRUE}
 
 var_list <- c("opo5r", "ipo5r", "opu5r", "ipu5r", "iplos", "delr")
-var_label <- c("Outpatient visits per 1000, aged >= 5",
-               "Inpatient admissions per 100 000, aged >= 5",
+var_label <- c("Outpatient visits per 1000, aged ≥ 5",
+               "Inpatient admissions per 100 000, aged ≥ 5",
                "Outpatient visits per 1000, aged < 5",
                "Inpatient admissions per 100 000, aged < 5",
                "Inpatient average length of stay",
@@ -916,8 +916,8 @@ dev.off()
 ```{r sfig_4, echo=TRUE, warning=TRUE}
 
 var_list <- c("opo5r", "ipo5r", "opu5r", "ipu5r", "iplos", "delr")
-var_label_l <- c("Outpatient\nvisits\nper 1000,\naged >= 5",
-                 "Inpatient\nadmissions\nper 100 000,\naged >= 5",
+var_label_l <- c("Outpatient\nvisits\nper 1000,\naged ≥ 5",
+                 "Inpatient\nadmissions\nper 100 000,\naged ≥ 5",
                  "Outpatient\nvisits\nper 1000,\naged < 5",
                  "Inpatient\nadmissions\nper 100 000, \naged < 5",
                  "Inpatient\naverage\nlength\nof stay",
