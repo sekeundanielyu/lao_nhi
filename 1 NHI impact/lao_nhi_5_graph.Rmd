@@ -31,16 +31,16 @@ if(!dir.exists("./graph")) {dir.create("./graph")}
 var_list <- c("opo5r", "ipo5r", "opu5r", "ipu5r", "iplos", "delr")
 
 # Label top
-var_label_t <- c("Outpatient visits per 1000, aged >= 5",
-               "Inpatient admissions per 100 000, aged >= 5",
+var_label_t <- c("Outpatient visits per 1000, aged ≥ 5",
+               "Inpatient admissions per 100 000, aged ≥ 5",
                "Outpatient visits per 1000, aged < 5",
                "Inpatient admissions per 100 000, aged < 5",
                "Inpatient average length of stay",
                "Institutional birth rate")
 
 # Label left
-var_label_l <- c("Outpatient\nvisits\nper 1000,\naged >= 5",
-                 "Inpatient\nadmissions\nper 100 000,\naged >= 5",
+var_label_l <- c("Outpatient\nvisits\nper 1000,\naged ≥ 5",
+                 "Inpatient\nadmissions\nper 100 000,\naged ≥ 5",
                  "Outpatient\nvisits\nper 1000,\naged < 5",
                  "Inpatient\nadmissions\nper 100 000, \naged < 5",
                  "Inpatient\naverage\nlength\nof stay",
@@ -309,12 +309,17 @@ plot.pov <- plot.pov %>%
   filter(pgroup != "Overall") %>%
   mutate(outcome2 = factor(outcome, 
                            levels = var_list, 
-                           labels = var_label_t))
+                           labels = var_label_t),
+         across(c(oval.est, oval.se, 
+                  oval.conf.low, oval.conf.high),
+                ~ ifelse(event.time < 0, NA, .)),
+         pctchange = scales::percent(oval.change, accuracy = 0.1),
+         pctchange = if_else(event.time != 0, NA, pctchange))
 
 write_xlsx(plot.pov, paste0("./output/", "sfig_6_did_poverty.xlsx"))
 
 # Plot -------------------------------------------------------------------------
- 
+
 xl <- range(plot.pov$event.time) # x-axis length / index
 
 plot <- ggplot(
@@ -323,9 +328,23 @@ plot <- ggplot(
   geom_vline(aes(xintercept = 0), linetype = "dashed", 
              color = "black", alpha = 0.9, linewidth = 0.05) +
   geom_hline(aes(yintercept = 0), color = "black", linewidth = 0.175) +
-    geom_point(position = position_dodge2(width = 0.6), size = 0.9) +
+  geom_point(position = position_dodge2(width = 0.6), size = 0.9) +
   geom_linerange(aes(x = event.time, ymin = conf.low, ymax = conf.high), 
                  position = position_dodge2(width = 0.6), size = 0.3) +
+  geom_text(x = 0.7, y = Inf, label = expression(Delta), 
+            family = "Source Sans Pro", color = "#FC4E07", 
+            vjust = 1.5, size = 2) +
+  geom_text(data = subset(plot.pov, pgroup == "High poverty"),
+            aes(x = 1.5, y = Inf, label = pctchange), 
+            family = "Source Sans Pro", color = "#FC4E07", 
+            vjust = 1.5, size = 2) +
+  geom_text(x = 2.7, y = Inf, label = expression(Delta), 
+            family = "Source Sans Pro", color = "#00AFBB", 
+            vjust = 1.5, size = 2) +
+  geom_text(data = subset(plot.pov, pgroup == "Low poverty"),
+            aes(x = 3.5, y = Inf, label = pctchange), 
+            family = "Source Sans Pro", color = "#00AFBB", 
+            vjust = 1.5, size = 2) +
   scale_y_continuous(name = "Difference-in-differences estimates") +
   scale_x_continuous(name = "Time since NHI introduction, quarter",
                      breaks = xl[1]:xl[2]) +
@@ -695,7 +714,7 @@ plot.hon <- var_list_h %>%
                       levels = var_list_h, 
                       labels = var_label_h),
     type2 = factor(type, levels = c("relative_magnitude", "smoothness"),
-                   labels = c("Relative magnitudes (M_bar)", 
+                   labels = c("Relative magnitudes (M_bar)",
                               "Smoothness restrictions (M)")),
     org = factor(ifelse(method == "Original", "Original", 
                         "Robust Confidence Interval"),
@@ -732,7 +751,8 @@ xl <- c(0, max(plot.hon$M2, na.rm=T)) # x-axis length / index
 plot <- ggplot(
   plot.hon, aes(color = org)) + 
   ggh4x::facet_grid2(outcome2 ~ type2, scales = "free", axes = "x", 
-                     independent = "x", switch = "both") +
+                     independent = "x", switch = "both",
+                     labeller = labeller(type2 = type2_labels)) +
   geom_hline(aes(yintercept = 0), color = "black", linewidth = 0.175) +
   geom_linerange(aes(x = M2, ymin = ub, ymax = lb), size = 0.3) +
   scale_x_continuous(name = "Restrictions") +   

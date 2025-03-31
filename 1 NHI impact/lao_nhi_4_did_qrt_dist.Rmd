@@ -1062,6 +1062,36 @@ outname <- c("opo5r", "opu5r", "ipo5r", "ipu5r", "iplos", "delr")
 # Loop through each outcome
 for (i in 1:length(outname)) {
   outn <- rlang::sym(outname[i])
+
+  preevent <- data_pov %>%
+    filter(group > 0 & event == -1) %>%  # only treated units, event time -1, (excl. G0, G9)
+    mutate(avgunit = mean(!!outn, na.rm = TRUE)) %>%  # simple average of units
+    group_by(group) %>%  # grouping to reflect group-time ATT
+    mutate(avggrp = mean(!!outn, na.rm = TRUE)) %>% ungroup() %>%  # average of units by group
+    dplyr::select(c("group", "avgunit", "avggrp")) %>%
+    mutate(avgdyn = mean(avggrp)) %>%  # averaging of averages # same weighted avg output
+    unique
+  
+  prevent_all <- preevent %>% 
+    pull(avgdyn) %>%
+    unique()
+  
+  preevent_pov <- data_pov %>%
+    filter(group > 0 & event == -1) %>%  # only treated units, event time -1, (excl. G0, G9)
+    group_by(pov_med) %>%  # grouping to reflect group-time ATT
+    mutate(avgpov = mean(!!outn, na.rm = TRUE)) %>% ungroup() %>%  # average by pov_med
+    dplyr::select(c("group", "avgpov", "pov_med")) %>% #"avgunit", 
+    unique
+  
+  prevent_pov1 <- preevent_pov %>% 
+    filter(pov_med == 1) %>% # 1 = above median (poor)
+    pull(avgpov) %>%
+    unique()
+  
+  prevent_pov0 <- preevent_pov %>% 
+    filter(pov_med == 0) %>% # 0 = below median (rich)
+    pull(avgpov) %>%
+    unique()
   
   # Overall group analysis
   overall_att <- data_pov %>% 
@@ -1070,7 +1100,10 @@ for (i in 1:length(outname)) {
               sunab(group, time) | dnum + time, cluster = ~pnum, data = .), 
       agg = "att"))) %>%
     filter(!term %in% c("facnum")) %>%
-    mutate(outcome = outname[i], pgroup = "overall")
+    mutate(outcome = outname[i],
+           pgroup = "overall",
+           avgpov = prevent_all,
+           overall.change = estimate / avgpov)
   
   overall <- data_pov %>% 
     do(broom::tidy(
@@ -1093,7 +1126,10 @@ for (i in 1:length(outname)) {
               sunab(group, time) | dnum + time, 
             data = subset(., pov_med == 1), cluster = ~pnum), agg = "att"))) %>%
     filter(!term %in% c("facnum")) %>%
-    mutate(outcome = outname[i], pgroup = c("above median (poor)"))
+    mutate(outcome = outname[i], 
+           pgroup = c("above median (poor)"),
+           avgpov = prevent_pov1,
+           overall.change = estimate / avgpov)
   
   poor <- data_pov %>% 
     do(broom::tidy(
@@ -1117,7 +1153,10 @@ for (i in 1:length(outname)) {
               sunab(group, time) | dnum + time, 
             data = subset(., pov_med == 0), cluster = ~pnum), agg="att"))) %>%
     filter(!term %in% c("facnum")) %>%
-    mutate(outcome = outname[i], pgroup = c("below median (rich)"))
+    mutate(outcome = outname[i], 
+           pgroup = c("below median (rich)"),
+           avgpov = prevent_pov0,
+           overall.change = estimate / avgpov)
   
   rich <- data_pov %>% 
     do(broom::tidy(
@@ -1154,9 +1193,12 @@ saiw_att_list <- saiw_att_list %>%
   select(-statistic) %>%
   mutate(oval.conf.low = estimate - (qnorm(0.975) * std.error),
          oval.conf.high = estimate + (qnorm(0.975) * std.error)) %>%
-  rename("oval.est" = "estimate", # new -> old
-         "oval.se" = "std.error",
-         "oval.pval" = "p.value")
+  rename( # new <- old
+    "oval.est" = "estimate", 
+    "oval.se" = "std.error",
+    "oval.pval" = "p.value",
+    "oval.change" = "overall.change",
+    "baseline" = "avgpov")
 
 saiw_tidy_frame <- left_join(saiw_list, saiw_att_list, 
                              by=c("outcome", "pgroup")) %>%
