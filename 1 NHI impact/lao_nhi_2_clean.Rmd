@@ -4123,7 +4123,9 @@ data.m.dl <- data.m.dl %>%
          semp = coalesce(semp_d, semp_p),
          urba = coalesce(urba_d, urba_p),
          area = coalesce(area_d, area_p),
-         pov_med = ifelse(pov_he >= median(pov_he), 1, 0))
+         pov_med = ifelse(pov_he >= median(pov_he), 1, 0)) 
+                          # 1 = above median (poor; high poverty area)
+                          # 0 = below median (rich; low poverty area)
 
 # Utilization rate
 data.m.dl <- within(data.m.dl, {
@@ -4219,6 +4221,8 @@ data.m.fl <- data.m.fl %>%
          urba = coalesce(urba_d, urba_p),
          area = coalesce(area_d, area_p),
          pov_med = ifelse(pov_he >= median(pov_he, na.rm = TRUE), 1, 0))
+                          # 1 = above median (poor; high poverty area)
+                          # 0 = below median (rich; low poverty area)
 
 # Utilization rate
 data.m.fl <- within(data.m.fl, {
@@ -4348,6 +4352,8 @@ data.q.dl <- data.q.dl %>%
          urba = coalesce(urba_d, urba_p),
          area = coalesce(area_d, area_p),
          pov_med = ifelse(pov_he >= median(pov_he, na.rm = TRUE), 1, 0))
+                          # 1 = above median (poor; high poverty area)
+                          # 0 = below median (rich; low poverty area)
 
 # Utilization rate
 data.q.dl <- within(data.q.dl, {
@@ -4442,6 +4448,8 @@ data.q.fl <- data.q.fl %>%
          urba = coalesce(urba_d, urba_p),
          area = coalesce(area_d, area_p),
          pov_med = ifelse(pov_he >= median(pov_he, na.rm = TRUE), 1, 0))
+                          # 1 = above median (poor; high poverty area)
+                          # 0 = below median (rich; low poverty area)
 
 # Utilization rate
 data.q.fl <- within(data.q.fl, {
