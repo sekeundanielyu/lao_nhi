@@ -819,10 +819,10 @@ plot.its <- its_meta_final %>%
          model = factor(dataset, 
                            levels = c("model_2_m", "model_1_m", 
                                       "model_2_q", "model_1_q"),
-                           labels = c("Never treated, monthly", 
-                                      "Last treated, monthly", 
-                                      "Never treated, quarterly", 
-                                      "Last treated, quarterly")))
+                           labels = c("Never-treated, monthly", 
+                                      "Last-treated, monthly", 
+                                      "Never-treated, quarterly", 
+                                      "Last-treated, quarterly")))
 
 write_xlsx(plot.its, "./output/sfig_13_cits.xlsx")
 
@@ -842,17 +842,17 @@ plot <- plot.its %>%
                  expression("DID of slope ("*beta[7]*")"))) +
   scale_color_manual(
     name = "Control group, data frequency:",
-    labels = c("Never treated, monthly",
-               "Last treated, monthly",
-               "Never treated, quarterly",
-               "Last treated, quarterly"),
+    labels = c("Never-treated, monthly",
+               "Last-treated, monthly",
+               "Never-treated, quarterly",
+               "Last-treated, quarterly"),
     values = c("#0CAFBB", "#0CAFBB", "#FC4E07", "#FC4E07")) +
   scale_shape_manual(
     name = "Control group, data frequency:",
-    labels = c("Never treated, monthly",
-             "Last treated, monthly",
-             "Never treated, quarterly",
-             "Last treated, quarterly"),
+    labels = c("Never-treated, monthly",
+             "Last-treated, monthly",
+             "Never-treated, quarterly",
+             "Last-treated, quarterly"),
     values = c(15, 17, 15, 17)) +
   scale_x_continuous(name = "Difference-in-differences estimates") + 
   theme_bw() +
