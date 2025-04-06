@@ -1274,7 +1274,7 @@ p_by_g_n
 # Period: 3 quarters before/after (q4/2015 - q3/2017)
 # ------------------------------------------------------------------------------
 
-# Treatment group is group 4, 5, 6
+# Intervention group is group 4, 5, 6
 pnumlist <- unique(data.its$pnum)  # run model for each province
 pnumlist <- pnumlist[pnumlist != 1 & !(pnumlist %in% c(5, 6, 8, 10, 12, 13, 16))]
 # drop group 0 (VTC), group 8 (13, 16), group 9 (5, 6, 8, 10, 12)
@@ -1334,7 +1334,7 @@ its_m1q_all <- do.call(rbind, its_m1q)
 # Period: 3 quarters before/after (q4/2015 - q2/2018)
 # ------------------------------------------------------------------------------
 
-# Treatment group (group 4, 5, 6, 8, 9)
+# Intervention group (group 4, 5, 6, 8, 9)
 pnumlist <- unique(data.its$pnum)
 pnumlist <- pnumlist[pnumlist != 1] # drop group 0 (VTC)
 
@@ -1418,7 +1418,7 @@ its_m2q_all <- do.call(rbind, its_m2q)
 # Period: 3 quarters before/after (q4/2015 - q3/2017)
 # ------------------------------------------------------------------------------
 
-# Treatment group (group 4, 5, 6 only)
+# Intervention group (group 4, 5, 6 only)
 pnumlist <- unique(data.its$pnum)
 pnumlist <- pnumlist[pnumlist != 1 & !(pnumlist %in% c(5, 6, 8, 10, 12, 13, 16))]
 # drop group 0 (VTC) and group 8 (13, 16) and group 9 (5, 6, 8, 10, 12)

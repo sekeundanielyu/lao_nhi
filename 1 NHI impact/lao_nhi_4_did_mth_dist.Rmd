@@ -648,7 +648,7 @@ p_by_g_n
 # # Period: 8 months before/after (Oct/2015 - Jun/2018)
 # ------------------------------------------------------------------------------
 
-# Treatment group is group 10, 11, 15, 16, 17
+# Intervention group is group 10, 11, 15, 16, 17
 pnumlist <- unique(data.its$pnum)  # run model for each province
 pnumlist <- pnumlist[pnumlist != 1 & !(pnumlist %in% c(5, 6, 8, 10, 12, 13, 16))]
 # drop group 0 (VTC), group 24 (13,16), group 25 (5, 6, 8, 10, 12)
@@ -708,7 +708,7 @@ its_m1m_all <- do.call(rbind, its_m1m)
 # # Period: 8 months before/after (Oct/2015 - Jun/2018)
 # ------------------------------------------------------------------------------
 
-# Treatment group (group 10, 11, 15, 16, 17, 24, 25)
+# Intervention group (group 10, 11, 15, 16, 17, 24, 25)
 pnumlist <- unique(data.its$pnum)
 pnumlist <- pnumlist[pnumlist != 1] # drop group 0 (VTC)
 
@@ -792,7 +792,7 @@ its_m2m_all <- do.call(rbind, its_m2m)
 # # Period: 8 months before/after (Oct/2015 - Jun/2018)
 # ------------------------------------------------------------------------------
 
-# Treatment group (group 10, 11, 15, 16, 17 only)
+# Intervention group (group 10, 11, 15, 16, 17 only)
 pnumlist <- unique(data.its$pnum)
 pnumlist <- pnumlist[pnumlist != 1 & !(pnumlist %in% c(5, 6, 8, 10, 12, 13, 16))]
 # drop group 0 (VTC) and group 24 (13, 16) and group 25 (5, 6, 8, 10, 12)

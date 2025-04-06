@@ -480,7 +480,7 @@ plot.ajt <- rbind(plot.dyn, plot.dyn.b.new) %>%
            levels = c("uc.cls", "uc.clsbal", "uc.clslast", "u.cls"),
            labels = c("Base model:\nLast + not-yet-treated\nno anticipation",
                       "Balanced\nNHI exposure\n(e=0-2)",
-                      "Last treated units\nas control",
+                      "Last-treated units\nas control",
                       "No covariate\n(unconditional PTA)"))) %>%
   group_by(name) %>%
   mutate(x.pctchange = max(event.time) - 1.1)
@@ -670,7 +670,7 @@ plot.ajt <- rbind(plot.dyn, plot.dyn.b.new) %>%
            name,
            levels = c("uc.cls", "uc.clsbal", "uc.clslast", "u"),
            labels = c("Base model:\nLast + not-yet-treated\nno anticipation",
-                      "Balanced\nNHI exposure\n(e=0-2)",
+                      "Balanced\nNHI exposure\n(e=0-7)",
                       "Last treated units\nas control",
                       "No covariate\n(unconditional PTA)"))) %>%
   group_by(name) %>%

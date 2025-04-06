@@ -620,7 +620,7 @@ plot.ovl.all <- lapply(
  mutate(
    control_type = factor(control_type,
                   levels = c("lastnyt", "last", "nvt"),
-                  labels = c("Later-treated\n(not yet + last treated)",
+                  labels = c("Later-treated\n(not-yet- + last-treated)",
                              "Last-treated", "Never-treated")),
    group = factor(treat,
                    levels = c(0, 1),
