@@ -129,17 +129,17 @@ plot.dyn <- var_list %>%
                   overall.conf.low, overall.conf.high), 
                 ~ ifelse(event.time < 0, NA, .)),
          pctchange = scales::percent(overall.change, accuracy = 0.1),
-         pctchange = if_else(event.time != 0, NA, pctchange))
+         pctchange = if_else(event.time != 0, NA, pctchange)) %>%
+  filter(name == "uc.cls")
 
 write_xlsx(plot.dyn, paste0("./output/", "fig_3_did_main.xlsx"))
 
 # Plot -------------------------------------------------------------------------
 
-data.uc.cls <- plot.dyn %>% filter(name == "uc.cls")
 xl <- range(plot.dyn$event.time) # x-axis length / index
 
 plot <- 
-  ggplot(data.uc.cls, aes(x = event.time, y = estimate)) +
+  ggplot(plot.dyn, aes(x = event.time, y = estimate)) +
   facet_wrap(~outcome2, ncol = 2, scales = "free") +
   geom_vline(
     aes(xintercept = 0), linetype = "dashed", col = "black", 
@@ -232,13 +232,13 @@ plot.fac <- map_dfr(c("dh", "hc"),
          payment = if_else(is.na(pctchange), NA, payment),
          facl = factor(facl,
                        levels = c("dh", "hc"),
-                       labels = c("District hospitals", "Health centers")))
-    
+                       labels = c("District hospitals", "Health centers"))) %>%
+  filter(name == "uc.cls")
+
 write_xlsx(plot.fac, paste0("./output/", "sfig_5_did_facility.xlsx"))
 
 # Plot -------------------------------------------------------------------------
 
-plot.fac <- plot.fac %>% filter(name == "uc.cls")
 xl <- range(plot.fac$event.time) # x-axis length / index
 
 plot <- ggplot(
@@ -419,13 +419,13 @@ plot.grp <- plot.grp %>%
                            labels = var_label_l),
          pctchange = if_else(event.time != 0, NA, pctchange)) %>%
   group_by(group) %>%
-  mutate(x.pctchange = max(event.time) - 0.8)
+  mutate(x.pctchange = max(event.time) - 0.8) %>% 
+  filter(name == "uc.cls")
 
 write_xlsx(plot.grp, paste0("./output/", "sfig_7_did_group.xlsx"))
 
 # Plot -------------------------------------------------------------------------
 
-plot.grp <- plot.grp %>% filter(name == "uc.cls")
 xl <- range(plot.grp$event.time) # x-axis length / index
 
 plot <- ggplot(
@@ -611,13 +611,13 @@ plot.cnt <- plot.cnt %>%
            ~ ifelse(event.time < 0, NA, .)),
     pctchange = scales::percent(overall.change, accuracy = 0.1),
     pctchange = if_else(event.time != 0, NA, pctchange),
-    x.pctchange = max(event.time) - 1.1)
+    x.pctchange = max(event.time) - 1.1) %>%
+  filter(name == "uc.cls")
 
 write_xlsx(plot.cnt, paste0("./output/","sfig_10_did_count.xlsx"))
 
 # Plot -------------------------------------------------------------------------
 
-plot.cnt <- plot.cnt %>% filter(name == "uc.cls")
 xl <- range(plot.cnt$event.time) # x-axis length / index
 
 plot <- ggplot(
@@ -739,13 +739,13 @@ colnames(smexp) <- c("group_id", "type", "seq", "M2")
 
 plot.hon <- plot.hon %>% 
   left_join(smexp, by = c("group_id", "type", "seq")) %>%
-  mutate(M2 = coalesce(M2, M))
+  mutate(M2 = coalesce(M2, M)) %>% 
+  filter(name == "uc.cls")
 
 write_xlsx(plot.hon, paste0("./output/", "sfig_12_did_honest.xlsx"))
 
 # Plot -------------------------------------------------------------------------
 
-plot.hon <- plot.hon %>% filter(name == "uc.cls")
 xl <- c(0, max(plot.hon$M2, na.rm=T)) # x-axis length / index
 
 plot <- ggplot(
