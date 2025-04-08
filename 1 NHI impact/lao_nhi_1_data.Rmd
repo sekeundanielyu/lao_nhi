@@ -77,7 +77,7 @@ data_ip = do.call(rbind, datalist_ip)
 # datadescription
 # changed from "TotalHospitalDaysOfDischargePatients" to "Inpatient Days of Care"
 # changed from "Total hospitalization days" to "Total number of patients discharged during the period"
-# ignore warnings because inpatient days data are empty for <5, >5 disaggregated data
+# ignore warnings because inpatient days data are empty for <5, ≥5 disaggregated data
 
 datalist_opip = list()
 for (i in 1:18) {
@@ -256,7 +256,7 @@ col_names <- unique(data.lsb$variable)
 
 data.lsb <- data.lsb %>%
   spread(key = variable, value = value) %>%       # pivot to wide
-  mutate(pop_age_o5 = pop_total - pop_age_u5) %>% # generate age >5
+  mutate(pop_age_o5 = pop_total - pop_age_u5) %>% # generate age ≥5
   group_by(district) %>%
   mutate(time = as.numeric(row_number())) %>%     # add sequence
   filter(year <= 2020)
