@@ -42,7 +42,7 @@ source("lao_nhi_0_package.r", echo = TRUE)
 # growth monitoring
 
 # Period: 10/2013 - 11/2023
-# Age (<5, >5)
+# Age (<5, ≥5)
 # Organization unit selected:
 #   Private Hospitals
 #   Private Pharmacies
