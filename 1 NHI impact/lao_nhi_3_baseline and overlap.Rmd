@@ -64,9 +64,8 @@ data <- data %>%
                       "1306 Nong", "1408 Samouay")), # Drop NHI pilot districts
     !(district %in% c("0201 Phongsali")), # Drop district without CU5 in Q4/2015
     !str_detect(faclevel, "PH"), # Remove provincial hospitals
-    !(quarter %in% c("2015.1", "2015.2", "2015.3")) # Quarters to drop
-  ) 
-
+    !(quarter %in% c("2015.1", "2015.2", "2015.3"))) # Quarters to drop
+ 
 # District with PH or HC only
 # PH: XX00
 # PSL 0205 Bounnua: HC only
@@ -450,7 +449,7 @@ data.num2 <- data.num %>%
   summarise(count = sum(treat)) %>%
   setNames(c("intv_group", "quarter", "count"))
 
-write_xlsx(data.num2, "./output/sfig_1_district_num.xlsx")
+write_xlsx(data.num2, "./output/sfig_01_district_num.xlsx")
 
 plot <- ggplot(
   data.num2, aes(fill = intv_group, y = count, x = quarter)) + 
@@ -489,7 +488,7 @@ plot <- ggplot(
     legend.text = element_text(size = 10)) +
   guides(fill = guide_legend(byrow = TRUE))
 
-png(paste("./graph/sfig_1_district_num.png", sep = ""), units = "in",
+png(paste("./graph/sfig_01_district_num.png", sep = ""), units = "in",
     width = 9.5, height = 4.5, res = 500)
 print(plot)
 dev.off()
@@ -626,7 +625,7 @@ plot.ovl.all <- lapply(
                    levels = c(0, 1),
                    labels = c("Control", "Intervention")))
 
-write_xlsx(plot.ovl.all, "./output/sfig_2_overlap.xlsx")
+write_xlsx(plot.ovl.all, "./output/sfig_02_overlap.xlsx")
 
 theme.ps <- function() {
  theme_bw() +
@@ -677,7 +676,7 @@ plot.ovl.mirror.fix <- ggplot() +
 
 plot.ovl.mirror.fix
 
-png("./graph/sfig_2_overlap.png",
+png("./graph/sfig_02_overlap.png",
     units = "in", width = 5, height = 2.5, res = 400)
 print(plot.ovl.mirror.fix)
 dev.off()
@@ -806,8 +805,8 @@ group_unlist <- unlist(group_list, recursive = FALSE)
 total_bind <- do.call("rbind", total_list)
 group_bind <- do.call("rbind", group_unlist)
 
-# write_xlsx(total_bind,"./output/sfig_2_pta_qrt_total.xlsx")
-# write_xlsx(group_bind,"./output/sfig_3_pta_qrt_group.xlsx")
+# write_xlsx(total_bind,"./output/sfig_02_pta_qrt_total.xlsx")
+# write_xlsx(group_bind,"./output/sfig_03_pta_qrt_group.xlsx")
 
 # Total
 # Averaging all units directly vs. averaging by group with weights should yield 
@@ -853,7 +852,7 @@ total_bind <- total_bind %>%
 xl <- c(min(total_bind$event.time), # x-axis length / index
           max(total_bind$event.time))
 
-write_xlsx(total_bind,"./output/sfig_3_pta_overall.xlsx")
+write_xlsx(total_bind,"./output/sfig_03_pta_overall.xlsx")
 
 plot <- ggplot(
   total_bind, aes(x = event.time, y = util.mean, 
@@ -904,7 +903,7 @@ plot <- ggplot(
     legend.position.inside =  c(0.1, -0.067)
   )
 
-png("graph/sfig_3_pta_overall.png", 
+png("graph/sfig_03_pta_overall.png", 
     units = "in", width = 5.1, height = 6, res = 500)
 print(plot)
 dev.off()
@@ -935,7 +934,7 @@ group_bind <- group_bind %>%
 xl <- c(min(group_bind$event.time), # x-axis length / index
           max(group_bind$event.time))
 
-write_xlsx(group_bind,"./output/sfig_4_pta_cohort.xlsx")
+write_xlsx(group_bind,"./output/sfig_04_pta_cohort.xlsx")
 
 plot <- ggplot(
   group_bind, aes(x = event.time, y = util.mean, group = intv, color = intv)) +
@@ -997,7 +996,7 @@ plot <- ggplot(
     legend.position.inside =  c(0.05, -0.057)
   )
 
-png("graph/sfig_4_pta_cohort.png",
+png("graph/sfig_04_pta_cohort.png",
     units = "in",width = 4.75, height = 7, res = 500)
 print(plot)
 dev.off()

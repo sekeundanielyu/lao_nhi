@@ -1,9 +1,9 @@
-## ----knitr, include=FALSE-----------------------------------------------------------------
+## ----knitr, include=FALSE----------------------------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE, warning = TRUE, message = TRUE)
 
 
 
-## ----packages, echo=TRUE, message=FALSE, results="hide"-----------------------------------
+## ----packages, echo=TRUE, message=FALSE, results="hide"----------------------------------------
 
 # Set working directory
 library(rstudioapi)
@@ -17,7 +17,7 @@ pkg <- c(
          "remotes",             # Install R packages from other sources
          "devtools",            # Development tools for R packages
          "foreign",             # Reading / writing data from other software
-         "rlang",               # Tidy evaluation evaluation tools
+         "rlang",               # Tidy evaluation tools
 
          # Data wrangling
          "BMisc",               # Miscellaneous tools for data manipulation

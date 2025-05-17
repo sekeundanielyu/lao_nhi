@@ -4161,6 +4161,11 @@ data.m.dl <- within(data.m.dl, {
   logfacn <- ifelse(facnum > 0, log(facnum), NA)
 })
 
+data.m.dl <- data.m.dl %>%
+  group_by(dnum) %>%
+  mutate(facnum_fixed = facnum[event == -1][1],
+         facnum_fixed = if_else(event < -1, facnum, facnum_fixed)) %>%
+  ungroup()
 
 # Replace 'Inf' with zero for outcome variable
 var.names <- c("opo5r", "opu5r", "ipo5r", "ipu5r",
@@ -4257,6 +4262,12 @@ data.m.fl <- within(data.m.fl, {
   faco5 <- facnum / age_o5.m * 10000
   logfacn <- ifelse(facnum > 0, log(facnum), NA)
 })
+
+data.m.fl <- data.m.fl %>%
+  group_by(dnum) %>%
+  mutate(facnum_fixed = facnum[event == -1][1],
+         facnum_fixed = if_else(event < -1, facnum, facnum_fixed)) %>%
+  ungroup()
 
 # Replace 'Inf' with zero for outcome variable
 var.names <- c("opo5r", "opu5r", "ipo5r", "ipu5r",
@@ -4389,6 +4400,12 @@ data.q.dl <- within(data.q.dl, {
   logfacn <- ifelse(facnum > 0, log(facnum), NA)
 })
 
+data.q.dl <- data.q.dl %>%
+  group_by(dnum) %>%
+  mutate(facnum_fixed = facnum[event == -1][1],
+         facnum_fixed = if_else(event < -1, facnum, facnum_fixed)) %>%
+  ungroup()
+
 # Replace 'Inf' with zero for outcome variable
 var.names <- c("opo5r", "opu5r", "ipo5r", "ipu5r",
                "opo5r.nodec", "ipo5r.nodec",
@@ -4484,6 +4501,12 @@ data.q.fl <- within(data.q.fl, {
   faco5 <- facnum / age_o5.q * 10000
   logfacn <- ifelse(facnum > 0, log(facnum), NA)
 })
+
+data.q.fl <- data.q.fl %>%
+  group_by(dnum) %>%
+  mutate(facnum_fixed = facnum[event == -1][1],
+         facnum_fixed = if_else(event < -1, facnum, facnum_fixed)) %>%
+  ungroup()
 
 # Replace 'Inf' with zero for outcome variable
 var.names <- c("opo5r", "opu5r", "ipo5r", "ipu5r",

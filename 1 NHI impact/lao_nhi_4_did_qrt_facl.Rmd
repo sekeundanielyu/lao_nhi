@@ -223,7 +223,7 @@ data_hos %>%
   summarise(count = n_distinct(district)) # included districts; 130
 
 # ------------------------------------------------------------------------------
-## Hospital (DH only)
+# Hospital (DH only)
 # ------------------------------------------------------------------------------
 
 if(!dir.exists(paste0(outpath, "dh"))) {dir.create(paste0(outpath, "dh"))}
@@ -241,7 +241,7 @@ data_dh %>%
   summarise(count = n_distinct(district)) # included districts; 115
 
 # ------------------------------------------------------------------------------
-## Health Center (HC)
+# Health Center (HC)
 # ------------------------------------------------------------------------------
 
 if(!dir.exists(paste0(outpath, "hc"))) {dir.create(paste0(outpath, "hc"))}

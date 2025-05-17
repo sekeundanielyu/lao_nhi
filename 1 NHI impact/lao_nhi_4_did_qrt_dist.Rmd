@@ -255,7 +255,7 @@ honest_did.AGGTEobj <- function(es,
 # KMN 2017/10/01; SVK 2017/09/01; SRV 2016/12/01; SEK 2017/06/01; CPS 2017/09/01;
 # ATP 2016/07/01; XSB 2016/08/01
 
-# Intervention Groups:
+# Intervention sequence:
 # -----------------------------------
 # 1st treated (Q3/2016): 17 ATP, 03 LNT, 18 XSB
 # 2nd treated (Q4/2016): 14 SRV
@@ -772,7 +772,7 @@ for (k in 1:length(listu)) {
  sm_u_list[[k]] <- sm_u
 
  rm <- honest_did(es = dyn_u[[k]], e = 0, type = "relative_magnitude")
- rm$robust_ci <- rm$robust_ci[-1, ]  # Drop 0 as that is not really allowed.
+ rm$robust_ci <- rm$robust_ci[-1, ]  # Drop 0 as it is not really allowed.
  rm_rbci <- as.data.frame(rm$robust_ci)
  rm_orgci <- as.data.frame(rm$orig_ci)
  colnames(rm_orgci) <- c("lb", "ub", "method", "Delta")
@@ -802,22 +802,23 @@ write_xlsx(didsensitivity,
 <br>
 ```{r hetero, eval=FALSE, include=FALSE}
 
-# Codes are borrowed from
+# Code is borrowed from
 # https://github.com/fhollenbach/did_compare/blob/main/ComparingDiD.md
 # https://yiqingxu.org/tutorials/panel.html
-# Resource: https://asjadnaqvi.github.io/DiD/
+# https://asjadnaqvi.github.io/DiD/
 
 # G9 as never-treated unit
 # Control: not yet treated + last treated
 # Assumption: conditional parallel trends
+# facnum_fixed: time-invariant facnum (at event time = -1 for post-NHI, e-1 for pre-NHI) 
 
 data_alt <- data %>%
- filter(quarter >= 2015.4 & quarter <= 2017.3,
+  filter(quarter >= 2015.4 & quarter <= 2017.3,
         province != "01 Vientiane Capital") %>%
- mutate(group = ifelse(group == max(group), 0, group)) %>%
- mutate(treat = ifelse(group == max(group), 0, treat)) %>%
- mutate(event2 = ifelse(group == 0, -1000, event)) %>%
- mutate(group2 = ifelse(group == 0, 0, 1))  # group dummy: 0, 1
+  mutate(group = ifelse(group == max(group), 0, group)) %>%
+  mutate(treat = ifelse(group == max(group), 0, treat)) %>%
+  mutate(event2 = ifelse(group == 0, -1000, event)) %>%
+  mutate(group2 = ifelse(group == 0, 0, 1)) # group dummy: 0, 1
 head(data_alt)
 
 outname <- c("opo5r", "opu5r", "ipo5r", "ipu5r", "iplos", "delr")
@@ -827,7 +828,7 @@ outname <- c("opo5r", "opu5r", "ipo5r", "ipu5r", "iplos", "delr")
 # ------------------------------------------------------------------------------
 # install.packages("fixest")
 # library(fixest)
-#https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html#42_Interactions_that_don%E2%80%99t_involve_fixed-effects
+# https://cran.r-project.org/web/packages/fixest/vignettes/fixest_walkthrough.html#42_Interactions_that_don%E2%80%99t_involve_fixed-effects
 
 # Dynamic two-way fixed effects (homogeneous treatment assumption)
 # ref = c(-1, -100) means excluding the period just before the treatment (event == -1) 
@@ -840,7 +841,7 @@ for (i in 1:length(outname)) {
 
  twfe_dyn <- data_alt %>%
   do(tidy(
-    feols(!!outn ~ facnum + semp + urba + litr + imps +
+    feols(!!outn ~ facnum_fixed + semp + urba + litr + imps +
             i(event2, ref = c(-1, -1000)) | dnum + time,
           data = ., cluster = ~pnum), conf.int = TRUE)) %>%
   filter(grepl("event2::", term)) %>%
@@ -856,7 +857,8 @@ for (i in 1:length(outname)) {
  twfe_list[[i]] <- twfe_dyn
 }
 
-twfe_frame <- do.call(rbind, twfe_list)
+twfe_frame <- do.call(rbind, twfe_list) %>% 
+  print(n = Inf)
 
 # ------------------------------------------------------------------------------
 # Group-Time DiD (Callaway and Sant’Anna 2021)
@@ -864,7 +866,7 @@ twfe_frame <- do.call(rbind, twfe_list)
 # Not yet treated + Last treated
 
 cs_list <- list()
-covariate <- ~facnum + semp + urba + litr + imps
+covariate <- ~facnum_fixed + semp + urba + litr + imps # identical to using 'facnum'
 
 for (i in 1:length(outname)) {
  set.seed(55555)
@@ -893,41 +895,120 @@ cs_frame <- do.call(rbind, cs_list)
 # ------------------------------------------------------------------------------
 # Stacked DiD (Wing, Freedman and Hollingsworth 2024)
 # ------------------------------------------------------------------------------
+# https://github.com/hollina/stacked-did-weights/blob/main/stacked-example-r-and-stata.qmd
+# https://rawcdn.githack.com/hollina/stacked-did-weights/18a5e1155506cbd754b78f9cef549ac96aef888b/stacked-example-r-and-stata.html)
 
-# Extract group
-group_l <- data_alt %>% 
-  filter(group != 0) %>% 
-  pull(group) %>% 
-  sort() %>%
-  unique()
+data.stk <- data_alt %>%
+  mutate(
+    group_na = ifelse(group == 0, NA, group),
+    treat_org = treat)
 
-# Create stacked data
-getdata <- function(i) {
-  # keep what we need
-  data_alt %>% 
-    # keep treated units and all not yet treated units
-    filter(group == i | group == 0 | group > i) %>% 
-    # create an indicator for the dataset
-    mutate(df = i) %>% 
-    # make dummies
-    mutate(event = if_else(group == i, event, 0))
+# --- Sub-experiment 4 ---
+subexp4 <- data.stk %>%
+  filter(!group_na %in% c(5, 6)) %>%
+  mutate(
+    sub_exp = 4,
+    treat = group_na == 4,
+    event_time = time - sub_exp,
+    post = event_time >= 0)
+
+# --- Sub-experiment 5 ---
+subexp5 <- data.stk %>%
+  filter(!group_na %in% c(4, 6)) %>%
+  mutate(
+    sub_exp = 5,
+    treat = group_na == 5,
+    event_time = time - sub_exp,
+    post = event_time >= 0)
+
+# --- Sub-experiment 6 ---
+subexp6 <- data.stk %>%
+  filter(!group_na %in% c(4, 5, 8)) %>%
+  mutate(
+    sub_exp = 6,
+    treat = group_na == 6,
+    event_time = time - sub_exp,
+    post = event_time >= 0)
+
+# Combine all sub-experiments
+data.stk2 <- bind_rows(subexp4, subexp5, subexp6) %>%
+  mutate(treat = ifelse(is.na(treat), 0, treat))
+
+# Keep only the event_time within [-3, 2]
+data.stk2 <- data.stk2 %>%
+  filter(event_time >= -3, event_time <= 2)
+
+# datasummary(All(data.stk2) ~ N + Mean + SD + Min + Max,
+#            data = data.stk2,
+#            output = 'markdown')
+
+# Create compute_weights() function
+compute_weights <- function(dataset, treatedVar, eventTimeVar, subexpVar) {
+  
+  # Step 0: Copy the underlying dataset
+  stack_dt_temp <- dataset
+  
+  # Step 1: Compute stack-level counts (overall by event time)
+  stack_dt_temp <- stack_dt_temp %>%
+    group_by(across(all_of(eventTimeVar))) %>%
+    mutate(stack_n = n(),
+           stack_treat_n = sum(.data[[treatedVar]]),
+           stack_control_n = sum(1 - .data[[treatedVar]])) %>%
+    ungroup()
+  
+  # Step 2: Compute sub-experiment-level counts (by subexp and event time)
+  stack_dt_temp <- stack_dt_temp %>%
+    group_by(across(all_of(c(subexpVar, eventTimeVar)))) %>%
+    mutate(sub_n = n(),
+           sub_treat_n = sum(.data[[treatedVar]]),
+           sub_control_n = sum(1 - .data[[treatedVar]])) %>%
+    ungroup()
+  
+  # Step 3: Compute sub-experiment share of totals
+  stack_dt_temp <- stack_dt_temp %>%
+    mutate(sub_share = sub_n / stack_n,
+           sub_treat_share = sub_treat_n / stack_treat_n,
+           sub_control_share = sub_control_n / stack_control_n)
+  
+  # Step 4: Compute weights for treated and control groups
+  stack_dt_temp <- stack_dt_temp %>%
+    mutate(
+      stack_weight = case_when(
+        .data[[treatedVar]] == 1 ~ 1,
+        .data[[treatedVar]] == 0 ~ sub_treat_share / sub_control_share,
+        TRUE ~ NA))
+  
+  return(stack_dt_temp)
 }
 
-data.stk <- map_df(group_l, getdata) %>% 
-  mutate(p_df = paste(pnum, df)) %>%
-  mutate(d_df = paste(dnum, df))
+# Compute the stacked weights
+data.stk2 = compute_weights(
+      dataset = data.stk2,
+      treatedVar = "treat",
+      eventTimeVar = "event_time",
+      subexpVar = "sub_exp")
 
+# Summarize
+data.stk2 %>%
+  filter(event_time == 0, treat == 0) %>%
+  group_by(sub_exp) %>%
+  summarise(avg_control_weight = mean(stack_weight, na.rm = TRUE)) %>%
+  arrange(sub_exp)
+
+# Estimate the stacked regression
+# Fit the event study model, using the weights, clustering at the province level.
 stacked_list <- list()
 
 for (i in 1:length(outname)) {
   outn <- rlang::sym(outname[i])
   
-  stacked_dyn <- data.stk %>% do(broom::tidy(
-    feols(!!outn ~ facnum + semp + urba + litr + imps + 
-            i(event, ref = c(-1)) | dnum^df + time^df,
-          data = ., cluster = "p_df"), conf.int = TRUE)) %>%
-    filter(grepl("event::", term)) %>%
-    mutate(t = as.double(str_replace(term, "event::", ""))) %>%
+  stacked_dyn <- data.stk2 %>% do(broom::tidy(
+    feols(!!outn ~ facnum_fixed + semp + urba + litr + imps + 
+            i(event_time, treat, ref = -1) | treat + event_time,
+          cluster = ~pnum, weights = ~stack_weight, data =.), conf.int = TRUE)) %>%
+    filter(grepl("event_time::", term)) %>%
+    mutate(t = as.double(str_replace_all(term, c("event_time::" = "", 
+                                                 ":treat" = "")))) %>%
     dplyr::select(t, estimate, std.error, conf.low, conf.high) %>%
     bind_rows(tibble(t = -1, estimate = 0, std.error = 0, 
                      conf.low = 0, conf.high = 0)) %>%
@@ -938,7 +1019,8 @@ for (i in 1:length(outname)) {
   stacked_list[[i]] <- stacked_dyn
 }
 
-stacked_frame <- do.call(rbind, stacked_list)
+stacked_frame <- do.call(rbind, stacked_list) %>% 
+  print(n = Inf)
 
 # ------------------------------------------------------------------------------
 # Two-stage DiD (Gardner 2021)
@@ -952,7 +1034,7 @@ impt_gdn_list <- list()
 for (i in 1:length(outname)) {
   impt_gdn_dyn <- data_alt %>% do(broom::tidy(
     did2s(yname = outname[i],
-          first_stage = ~ facnum + semp + urba + litr + imps | dnum + time,
+          first_stage = ~ facnum_fixed + semp + urba + litr + imps | dnum + time,
           second_stage = ~ i(event2, ref = c(-1, -1000)), treatment = "treat",
           data = ., cluster_var = "pnum"), conf.int = TRUE)) %>%
     filter(grepl("event2::", term)) %>%
@@ -967,7 +1049,8 @@ for (i in 1:length(outname)) {
   impt_gdn_list[[i]] <- impt_gdn_dyn
 }
 
-impt_gdn_frame <- do.call(rbind, impt_gdn_list)
+impt_gdn_frame <- do.call(rbind, impt_gdn_list) %>% 
+  print(n = Inf)
 
 # ------------------------------------------------------------------------------
 # Extended two-way fixed effects DiD (Wooldridge 2022)
@@ -985,7 +1068,7 @@ for (i in seq_along(outname)) {
     rename(wgroup = group) %>%
     etwfe(
       fml = as.formula(paste(outname[i], 
-                             "~ facnum + semp + urba + litr + imps")),
+                             "~ facnum_fixed + semp + urba + litr + imps")),
       tvar = time,
       gvar = wgroup,
       vcov = ~pnum,
@@ -1004,7 +1087,8 @@ for (i in 1:length(etwfe_list)) {
   etwfe_dyn_list[[i]] <- etwfe_dyn
 }
 
-etwfe_frame <- do.call(rbind, etwfe_dyn_list)
+etwfe_frame <- do.call(rbind, etwfe_dyn_list) %>% 
+  print(n = Inf)
 
 # ------------------------------------------------------------------------------
 # Tidy and append
@@ -1022,7 +1106,7 @@ didalt <- bind_rows(etwfe_frame, stacked_frame, impt_gdn_frame,
                                     "Two-stage DiD (Gardner 2021)",
                                     "Extended TWFE DiD (Wooldridge 2021)")))
 
-write_xlsx(didalt, "./output/sfig_9_did_hetero.xlsx")
+write_xlsx(didalt, "./output/sfig_09_did_hetero.xlsx")
 
 
 ```
@@ -1144,6 +1228,7 @@ for (i in 1:length(outname)) {
                   conf.low, conf.high, p.value) %>%
     bind_rows(tibble(event.time = -1, estimate = 0, std.error = 0, 
                      conf.low = 0, conf.high = 0)) %>%
+    arrange(event.time) %>%
     mutate(outcome = outname[i], pgroup = c("above median (poor)"))
   
   # Below-median (rich) group analysis
@@ -1171,6 +1256,7 @@ for (i in 1:length(outname)) {
                   conf.low, conf.high, p.value) %>%
     bind_rows(tibble(event.time = -1, estimate = 0, std.error = 0, 
                      conf.low = 0, conf.high = 0)) %>%
+    arrange(event.time) %>%
     mutate(outcome = outname[i], pgroup = c("below median (rich)"))
   
   overall_list[[i]] <- overall
@@ -1210,7 +1296,7 @@ saiw_tidy_frame <- left_join(saiw_list, saiw_att_list,
                                     "High poverty", 
                                     "Low poverty")))
 
-write_xlsx(saiw_tidy_frame, "./output/sfig_6_did_poverty.xlsx")
+write_xlsx(saiw_tidy_frame, "./output/sfig_06_did_poverty.xlsx")
 
 ```
 
@@ -1349,7 +1435,7 @@ pnumlist <- pnumlist[pnumlist != 1] # drop group 0 (VTC)
 # Outpatient o5: Sisattanak, Naxaythong, Xaithani, Hatxayfong
 # Outpatient u5: Xaithani, Sangthong, Pakngum
 # Inpatient o5: Sisattanak, Sangthong
-# Inpatient u5: Xaithani, Sangthong
+# Inpatient u5: Xaithani, Sangthong // drop
 # Inpatient day: Sangthong, Pakngum
 # Delivery: Xaithani, Sangthong, Pakngum
 
@@ -1434,7 +1520,7 @@ pnumlist <- pnumlist[pnumlist != 1 & !(pnumlist %in% c(5, 6, 8, 10, 12, 13, 16))
 # Outpatient o5: Sisattanak, Naxaythong, Xaithani, Hatxayfong
 # Outpatient u5: Xaithani, Sangthong, Pakngum
 # Inpatient o5: Sisattanak, Sangthong
-# Inpatient u5: Xaithani, Sangthong
+# Inpatient u5: Xaithani, Sangthong // drop
 # Inpatient day: Sangthong, Pakngum
 # Delivery: Xaithani, Sangthong, Pakngum
 

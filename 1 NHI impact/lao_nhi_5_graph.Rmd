@@ -235,7 +235,7 @@ plot.fac <- map_dfr(c("dh", "hc"),
                        labels = c("District hospitals", "Health centers"))) %>%
   filter(name == "uc.cls")
 
-write_xlsx(plot.fac, paste0("./output/", "sfig_5_did_facility.xlsx"))
+write_xlsx(plot.fac, paste0("./output/", "sfig_05_did_facility.xlsx"))
 
 # Plot -------------------------------------------------------------------------
 
@@ -292,7 +292,7 @@ plot <- ggplot(
     legend.text = element_text(size = 6),
     legend.position.inside = c(0.75, 0.1))
 
-png(paste0("./graph/", "sfig_5_did_facility.png"), 
+png(paste0("./graph/", "sfig_05_did_facility.png"), 
     units = "in", width = 4, height = 5.5, res = 500)
 print(plot)
 dev.off()
@@ -304,7 +304,7 @@ dev.off()
 <br>
 ```{r sfig_6_poverty, eval=FALSE, include=FALSE}
 
-plot.pov <- read_excel("./output/sfig_6_did_poverty.xlsx")
+plot.pov <- read_excel("./output/sfig_06_did_poverty.xlsx")
 plot.pov <- plot.pov %>%
   filter(pgroup != "Overall") %>%
   mutate(outcome2 = factor(outcome, 
@@ -316,7 +316,7 @@ plot.pov <- plot.pov %>%
          pctchange = scales::percent(oval.change, accuracy = 0.1),
          pctchange = if_else(event.time != 0, NA, pctchange))
 
-write_xlsx(plot.pov, paste0("./output/", "sfig_6_did_poverty.xlsx"))
+write_xlsx(plot.pov, paste0("./output/", "sfig_06_did_poverty.xlsx"))
 
 # Plot -------------------------------------------------------------------------
 
@@ -374,7 +374,7 @@ plot <- ggplot(
     legend.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "in"),
     legend.position = c(0.1, -0.065))
 
-png(paste0("./graph/", "sfig_6_did_poverty.png"), 
+png(paste0("./graph/", "sfig_06_did_poverty.png"), 
     units = "in", width = 5.1, height = 6, res = 500)
 print(plot)
 dev.off()
@@ -422,7 +422,7 @@ plot.grp <- plot.grp %>%
   mutate(x.pctchange = max(event.time) - 0.8) %>% 
   filter(name == "uc.cls")
 
-write_xlsx(plot.grp, paste0("./output/", "sfig_7_did_group.xlsx"))
+write_xlsx(plot.grp, paste0("./output/", "sfig_07_did_group.xlsx"))
 
 # Plot -------------------------------------------------------------------------
 
@@ -436,7 +436,7 @@ plot <- ggplot(
   layer.64 +  # Add the layers
   theme.64()  # Add the theme
 
-png(paste0("./graph/","sfig_7_did_group.png"), 
+png(paste0("./graph/","sfig_07_did_group.png"), 
     units = "in", width = 4.75, height = 7, res = 500)
 print(plot)
 dev.off()
@@ -485,7 +485,7 @@ plot.ajt <- rbind(plot.dyn, plot.dyn.b.new) %>%
   group_by(name) %>%
   mutate(x.pctchange = max(event.time) - 1.1)
 
-write_xlsx(plot.ajt, paste0("./output/", "sfig_8_did_adjust.xlsx"))
+write_xlsx(plot.ajt, paste0("./output/", "sfig_08_did_adjust.xlsx"))
 
 
 # Plot -------------------------------------------------------------------------
@@ -500,7 +500,7 @@ plot <- ggplot(
   layer.64 +  # Add the layers
   theme.64()  # Add the theme
 
-png(paste0("./graph/", "sfig_8_did_adjust.png"), 
+png(paste0("./graph/", "sfig_08_did_adjust.png"), 
     units = "in", width = 4.75, height = 7, res = 500)
 print(plot)
 dev.off()
@@ -512,7 +512,7 @@ dev.off()
 <br>
 ```{r sfig_9_hetero, eval=FALSE, include=FALSE}
 
-data.htr <- read_excel("./output/sfig_9_did_hetero.xlsx")
+data.htr <- read_excel("./output/sfig_09_did_hetero.xlsx")
 unique(data.htr$method)
 
 data.htr <- data.htr %>%
@@ -561,7 +561,7 @@ plot <- ggplot(
     legend.margin = margin(l = -0.4, unit = "in")) +
   guides(col = guide_legend(ncol = 3, byrow = TRUE))
 
-png(paste0("./graph/", "sfig_9_did_hetro.png"), 
+png(paste0("./graph/", "sfig_09_did_hetro.png"), 
     units = "in", width = 5.1, height = 6, res = 500)
 print(plot)
 dev.off()
@@ -809,6 +809,8 @@ its_meta_final <- rbind(its_meta_final_q, its_meta_final_m)
 
 plot.its <- its_meta_final %>%
   filter(!dataset %in% c("model_3_q", "model_3_m")) %>%
+  filter(!(outcome %in% c("ipu5r", "opu5r", "iplos", "delr") & 
+             dataset %in% c("model_2_q", "model_2_m"))) %>%
   mutate(outcome2 = factor(outcome, 
                            levels = var_list, 
                            labels = var_label_t),
