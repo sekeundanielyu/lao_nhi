@@ -214,7 +214,7 @@ write_xlsx(data_growth, "./data export/01_data_growth.xlsx")
 # Live Birth data from DHIS2;
 # Lao Statistics Bureau estimates (downloaded 2024.03.09)
 
-data.lsb <- read_excel("./data import/lao_dhis2_lsb mar2024.xlsx")
+data.lsb <- read_excel("./data import/lao_dhis2_pop_mar2024.xlsx")
 data.lsb <- data.lsb[, c(1:4)]
 colnames(data.lsb) <- c("variable", "district", "year", "value")
 data.lsb$pnum <- substr(data.lsb$district, 1, 2) # character

@@ -804,7 +804,7 @@ write_xlsx(didsensitivity,
 
 # Code is borrowed from
 # https://github.com/fhollenbach/did_compare/blob/main/ComparingDiD.md
-# https://yiqingxu.org/tutorials/panel.html
+# https://yiqingxu.org/packages/fect/
 # https://asjadnaqvi.github.io/DiD/
 
 # G9 as never-treated unit
@@ -895,8 +895,8 @@ cs_frame <- do.call(rbind, cs_list)
 # ------------------------------------------------------------------------------
 # Stacked DiD (Wing, Freedman and Hollingsworth 2024)
 # ------------------------------------------------------------------------------
-# https://github.com/hollina/stacked-did-weights/blob/main/stacked-example-r-and-stata.qmd
-# https://rawcdn.githack.com/hollina/stacked-did-weights/18a5e1155506cbd754b78f9cef549ac96aef888b/stacked-example-r-and-stata.html)
+# paper: https://www.nber.org/papers/w32054
+# https://github.com/hollina/stacked-did-weights/tree/main
 
 data.stk <- data_alt %>%
   mutate(
@@ -1025,8 +1025,9 @@ stacked_frame <- do.call(rbind, stacked_list) %>%
 # ------------------------------------------------------------------------------
 # Two-stage DiD (Gardner 2021)
 # ------------------------------------------------------------------------------
+# paper: https://www.bu.edu/econ/files/2024/07/two-stage-differences-in-differences.pdf
+# https://journal.r-project.org/articles/RJ-2022-048/
 # https://github.com/kylebutts/did2s
-# https://cran.r-project.org/web/packages/did2s/did2s.pdf
 # have to explicitly indicate both ref(-1, -1000), otherwise, wrong estimates.
 
 impt_gdn_list <- list()
