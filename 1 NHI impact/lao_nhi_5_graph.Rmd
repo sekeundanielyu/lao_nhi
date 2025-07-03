@@ -132,7 +132,7 @@ plot.dyn <- var_list %>%
          pctchange = if_else(event.time != 0, NA, pctchange)) %>%
   filter(name == "uc.cls")
 
-write_xlsx(plot.dyn, paste0("./output/", "fig_3_did_main.xlsx"))
+write_xlsx(plot.dyn, paste0("./output/", "fig_03_did_main.xlsx"))
 
 # Plot -------------------------------------------------------------------------
 
@@ -191,7 +191,7 @@ plot <-
     legend.text = element_text(size = 7),
     legend.position.inside = c(0.75, 0.1))
 
-png(paste0("./graph/", "fig_3_did_main.png"), 
+png(paste0("./graph/", "fig_03_did_main.png"), 
     units = "in", width = 5.1, height = 6, res = 500)
 print(plot)
 dev.off()

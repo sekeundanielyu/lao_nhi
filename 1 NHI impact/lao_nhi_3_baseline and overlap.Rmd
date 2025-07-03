@@ -330,7 +330,7 @@ data.shp <- data.shp %>%
                           levels = scheme_list, 
                           labels = scheme_label))
 
-write_xlsx(data.shp, "./output/fig_1_population_scheme.xlsx")
+write_xlsx(data.shp, "./output/fig_01_population_scheme.xlsx")
 
 hiro <- met.brewer("Hiroshige") # Red -> Blue
 mypalette <- hiro[c(1:5, 7:9)]
@@ -383,7 +383,7 @@ plot <- ggplot(
     legend.text = element_text(size = 10)) + 
   guides(fill = guide_legend(ncol = 1, reverse = TRUE, byrow = TRUE))
 
-png("./graph/fig_1_population_scheme.png", 
+png("./graph/fig_01_population_scheme.png", 
     units = "in", width = 6.3, height = 6.5, res = 400)
 print(plot)
 dev.off()
