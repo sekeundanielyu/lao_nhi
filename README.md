@@ -9,4 +9,5 @@ This repository contains R code for reproducing NHI study results.
         * `/graph`: figures
 
 #### Study 2
-To be added
+* Socioeconomic inequalities in health service utilization in Lao PDR: a retrospective analysis of nationally representative surveys, 2007/08–2018/19
+    * `/2 NHI equity`: code  
