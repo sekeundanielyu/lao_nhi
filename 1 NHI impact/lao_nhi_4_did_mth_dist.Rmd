@@ -1,7 +1,7 @@
 ---
-title: "The impact of NHI on health service utilization in Lao PDR"
+title: "Impact of national health insurance on health services utilization in Lao People's Democratic Republic (Lao PDR): a quasi-experimental evaluation using longitudinal administrative data"
 author: "Sekeun Daniel Yu (yus109@mcmaster.ca)"
-date: "April/2025"
+date: "July/2025"
 
 ---
 
