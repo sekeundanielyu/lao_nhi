@@ -1,6 +1,6 @@
 ---
 title: "Impact of national health insurance on health services utilization in Lao People's Democratic Republic (Lao PDR): a quasi-experimental evaluation using longitudinal administrative data"
-author: "Sekeun Daniel Yu (yus109@mcmaster.ca)"
+author: "Sekeun Daniel Yu (yus109@mcmaster.ca), Michel Grignon, Godefroy Emmanuel Guindon, Jean-Éric Tarride"
 date: "July/2025"
 
 ---
