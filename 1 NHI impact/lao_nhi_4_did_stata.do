@@ -318,8 +318,16 @@ In the manuscript, I employed the interaction-weighted estimator of Sun and Abra
 
 /***** Interaction-weighted DiD estimator (Sun and Abraham 2021) *****/
 
-* github install lsun20/eventstudyinteract
+/*
+Install user-written package:
+
+net install github, from("https://haghish.github.io/github/")
+github install lsun20/eventstudyinteract
 github update eventstudyinteract
+
+Resource: https://www.sciencedirect.com/science/article/abs/pii/S030440762030378X
+		  https://github.com/lsun20/EventStudyInteract
+*/
 
 gen group_na = group
 recode group_na (9=.)
@@ -661,6 +669,14 @@ recode group_0 (9=0)
 
 
 /***** Extended TWFE DID (Wooldrigde 2021) *****/
+
+/*
+Install user-written package:
+ssc install jwdid, all replace
+
+Resource: https://doi.org/10.1093/ectj/utad016
+		  https://friosavila.github.io/app_metrics/app_metrics11.html
+*/
 
 * Loop to estimate NHI effects
 local varlist opo5r opu5r ipo5r ipu5r iplos delr
