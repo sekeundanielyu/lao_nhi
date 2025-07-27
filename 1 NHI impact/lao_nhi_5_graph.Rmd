@@ -26,8 +26,14 @@ source("lao_nhi_0_package.r", echo = TRUE)
 
 # Create directories
 if(!dir.exists("./graph")) {dir.create("./graph")}
+if(!dir.exists("./log")) {dir.create("./log")}
 
+# Log
+logpath <- file.path(getwd(), "log", "lao_nhi_5_graph.log")
+logrecord <- log_open(logpath, autolog = TRUE, show_notes = FALSE)
+log_code()
 
+# Outcome
 var_list <- c("opo5r", "ipo5r", "opu5r", "ipu5r", "iplos", "delr")
 
 # Label top
@@ -164,7 +170,7 @@ plot <-
   geom_text(aes(x = 2.5, y = Inf, label = pctchange), 
             family = "Source Sans Pro", color = "black", 
             vjust = 1.5, size = 2) +
-  scale_y_continuous(name = "Difference-in-differences estimates") +
+  scale_y_continuous(name = "Average Treatment Effect on the Treated (ATT) estimates") +
   scale_x_continuous(name = "Time since NHI introduction, quarter", 
                      breaks = xl[1]:xl[2]) +
   theme_bw() +
@@ -345,7 +351,7 @@ plot <- ggplot(
             aes(x = 3.5, y = Inf, label = pctchange), 
             family = "Source Sans Pro", color = "#00AFBB", 
             vjust = 1.5, size = 2) +
-  scale_y_continuous(name = "Difference-in-differences estimates") +
+  scale_y_continuous(name = "Average Treatment Effect on the Treated (ATT) estimates") +
   scale_x_continuous(name = "Time since NHI introduction, quarter",
                      breaks = xl[1]:xl[2]) +
   scale_color_manual(values = c("#FC4E07", "#00AFBB"),
@@ -531,7 +537,7 @@ plot <- ggplot(
   geom_point(position = position_dodge2(width = 0.6), size = 0.6) +
   geom_linerange(aes(x = event.time, ymin = conf.low, ymax = conf.high), 
                  position = position_dodge2(width = 0.6), size = 0.3) +
-  scale_y_continuous(name = "Difference-in-differences estimates") +
+  scale_y_continuous(name = "Average Treatment Effect on the Treated (ATT) estimates") +
   scale_x_continuous(name = "Time since NHI introduction, quarter", 
                      breaks = xl[1]:xl[2]) +
   scale_color_manual(name = "Estimation Method", 
@@ -856,7 +862,7 @@ plot <- plot.its %>%
              "Never-treated, quarterly",
              "Last-treated, quarterly"),
     values = c(15, 17, 15, 17)) +
-  scale_x_continuous(name = "Difference-in-differences estimates") + 
+  scale_x_continuous(name = "Average Treatment Effect on the Treated (ATT) estimates") + 
   theme_bw() +
   theme(
     text = element_text(family = "Source Sans Pro"),
@@ -891,5 +897,10 @@ png(paste0("./graph/", "sfig_13_cits.png"),
       units = "in", width = 5.5, height = 6, res = 500)
 print(plot)
 dev.off()
+
+
+# Log close
+log_close(footer = TRUE)
+writeLines(readLines(logrecord))
 
 ```
