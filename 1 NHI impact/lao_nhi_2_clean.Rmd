@@ -24,6 +24,14 @@ getwd()
 # Install and load packages
 source("lao_nhi_0_package.r", echo = TRUE)
 
+# Create directories
+if(!dir.exists("./log")) {dir.create("./log")}
+
+# Log
+logpath <- file.path(getwd(), "log", "lao_nhi_2_clean.log")
+logrecord <- log_open(logpath, autolog = TRUE, show_notes = FALSE)
+log_code()
+
 ```
 <br>
 
@@ -38,7 +46,7 @@ file_names <- c(
 
 # Loop to read Excel files
 for (fn in file_names) {
-  assign(fn, read_excel(paste0("./data export/lao_nhi_01_", fn, ".xlsx"), 
+  assign(fn, read_excel(paste0("./data export/01_", fn, ".xlsx"), 
                         guess_max = 1000000))
 }
 
@@ -4738,6 +4746,11 @@ for (j in 1:length(var.names)) {
   print(plot)
   dev.off()
 }
+
+
+# Log close
+log_close(footer = TRUE)
+writeLines(readLines(logrecord))
 
 ```
 <br>

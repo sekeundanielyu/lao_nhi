@@ -580,7 +580,7 @@ dev.off()
 ```{r sfig_10_count, eval=FALSE, include=FALSE}
 
 # Load data
-var_list_c <- c("opo5", "opu5", "ipo5", "ipu5", "ipday", "del")
+var_list_c <- c("opo5", "ipo5", "opu5", "ipu5", "ipday", "del")
 var_label_c <- c("Outpatient\nvisits,\naged ≥ 5",
                  "Inpatient\nadmissions,\naged ≥ 5",
                  "Outpatient\nvisits,\naged < 5",
@@ -823,6 +823,9 @@ plot.its <- its_meta_final %>%
          label = factor(label, 
                         levels = c("DID of slope (beta7)", 
                                    "DID of level (beta6)", 
+                                   "Parallel trend (beta5)"),
+                        labels = c("DiD of slope (beta7)", 
+                                   "DiD of level (beta6)", 
                                    "Parallel trend (beta5)")),
          model = factor(dataset, 
                            levels = c("model_2_m", "model_1_m", 
@@ -844,10 +847,10 @@ plot <- plot.its %>%
   scale_y_discrete(
     labels = c("Parallel trend (beta5)" =
                  expression("Parallel trend ("*beta[5]*")"),
-               "DID of level (beta6)" = 
-                 expression("DID of level ("*beta[6]*")"),
-               "DID of slope (beta7)" = 
-                 expression("DID of slope ("*beta[7]*")"))) +
+               "DiD of level (beta6)" = 
+                 expression("DiD of level ("*beta[6]*")"),
+               "DiD of slope (beta7)" = 
+                 expression("DiD of slope ("*beta[7]*")"))) +
   scale_color_manual(
     name = "Control group, data frequency:",
     labels = c("Never-treated, monthly",

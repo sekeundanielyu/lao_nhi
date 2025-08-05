@@ -32,6 +32,14 @@ packageVersion("etwfe")         # 0.5.0
 packageVersion("bacondecomp")   # 0.1.1
 packageVersion("honestDiD")     # 0.2.6
 
+# Create directories
+if(!dir.exists("./log")) {dir.create("./log")}
+
+# Log
+logpath <- file.path(getwd(), "log", "lao_nhi_4_did_qrt_dist.log")
+logrecord <- log_open(logpath, autolog = TRUE, show_notes = FALSE)
+log_code()
+
 ```
 <br>
 
@@ -319,7 +327,7 @@ set.seed(55555)
 # Varying pre-period
 # ------------------------------------------------------------------------------
 
-print(outname[i])
+sep(outname[i])
 
 # Base
 v <- att_gt(yname = outname[i], tname = "time", idname = "dnum",
@@ -329,7 +337,9 @@ v <- att_gt(yname = outname[i], tname = "time", idname = "dnum",
             xformla = NULL, panel = TRUE, bstrap = TRUE, cband = TRUE,
             data = data_g9)
 glance(v)
-v
+print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+print(paste(outname[i], "- v", "- att")) %>% put()
+v %>% put()
 warnings()
 
 # SE clustered at provincial level
@@ -340,7 +350,9 @@ v.cls <- att_gt(yname = outname[i], tname = "time", idname = "dnum",
                 xformla = NULL, panel = TRUE, bstrap = TRUE, 
                 cband = TRUE, data = data_g9)
 glance(v.cls)
-v.cls
+print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+print(paste(outname[i], "- v.cls", "- att")) %>% put()
+v.cls %>% put()
 warnings()
 
 # w/ covariates, base
@@ -351,7 +363,9 @@ vc <- att_gt(yname = outname[i], tname = "time", idname = "dnum",
              xformla = covariate, panel = TRUE, bstrap = TRUE, 
              cband = TRUE, data = data_g9)
 glance(vc)
-vc
+print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+print(paste(outname[i], "- vc", "- att")) %>% put()
+vc %>% put()
 warnings()
 
 # w/ covariates, SE clustered at provincial level 
@@ -362,7 +376,9 @@ vc.cls <- att_gt(yname = outname[i], tname = "time", idname = "dnum",
                  xformla = covariate, panel = TRUE, bstrap = TRUE, 
                  cband = TRUE, data = data_g9)
 glance(vc.cls)
-vc.cls
+print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+print(paste(outname[i], "- vc.cls", "- att")) %>% put()
+vc.cls %>% put()
 warnings()
 
 # w/ covariates, SE clustered at provincial level, last cohort
@@ -373,7 +389,9 @@ vc.clslast <- att_gt(yname = outname[i], tname = "time", idname = "dnum",
                      xformla = covariate, panel = TRUE, bstrap = TRUE, 
                      cband = TRUE, data = data_g9)
 glance(vc.clslast)
-vc.clslast
+print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+print(paste(outname[i], "- vc.clslast", "- att")) %>% put()
+vc.clslast %>% put()
 warnings()
 
 # w/ covariates, SE clustered at provincial level + anticipation = 1
@@ -384,7 +402,9 @@ vc.clsant1 <- att_gt(yname = outname[i], tname = "time", idname = "dnum",
                      xformla = covariate, panel = TRUE, bstrap = TRUE, 
                      cband = TRUE, data = data_g9)
 glance(vc.clsant1)
-vc.clsant1
+print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+print(paste(outname[i], "- vc.clsant1", "- att")) %>% put()
+vc.clsant1 %>% put()
 warnings()
 
 # ------------------------------------------------------------------------------
@@ -399,7 +419,9 @@ u <- att_gt(yname = outname[i], tname = "time", idname = "dnum",
             xformla = NULL, panel = TRUE, bstrap = TRUE, 
             cband = TRUE, data = data_g9)
 glance(u)
-u
+print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+print(paste(outname[i], "- u", "- att")) %>% put()
+u %>% put()
 warnings()
 
 # SE clustered at provincial level
@@ -410,7 +432,9 @@ u.cls <- att_gt(yname = outname[i], tname = "time", idname = "dnum",
                 xformla = NULL, panel = TRUE, bstrap = TRUE, 
                 cband = TRUE, data = data_g9)
 glance(u.cls)
-u.cls
+print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+print(paste(outname[i], "- u.cls", "- att")) %>% put()
+u.cls %>% put()
 warnings()
 
 # w/ covariates, Universal pre-period
@@ -421,7 +445,9 @@ uc <- att_gt(yname = outname[i], tname = "time", idname = "dnum",
              xformla = covariate, panel = TRUE, bstrap = TRUE, 
              cband = TRUE, data = data_g9)
 glance(uc)
-uc
+print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+print(paste(outname[i], "- uc", "- att")) %>% put()
+uc %>% put()
 warnings()
 
 # w/ covariates, SE clustered at provincial level
@@ -432,7 +458,9 @@ uc.cls <- att_gt(yname = outname[i], tname = "time", idname = "dnum",
                  xformla = covariate, panel = TRUE, bstrap = TRUE, 
                  cband = TRUE, data = data_g9)
 glance(uc.cls)
-uc.cls
+print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+print(paste(outname[i], "- uc.cls", "- att")) %>% put()
+uc.cls %>% put()
 warnings()
 
 # w/ covariates, SE clustered at provincial level, last cohort
@@ -443,7 +471,9 @@ uc.clslast <- att_gt(yname = outname[i], tname = "time", idname = "dnum",
                      xformla = covariate, panel = TRUE, bstrap = TRUE, 
                      cband = TRUE, data = data_g9)
 glance(uc.clslast)
-uc.clslast
+print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+print(paste(outname[i], "- uc.clslast", "- att")) %>% put()
+uc.clslast %>% put()
 warnings()
 
 # w/ covariates, SE clustered at provincial level + anticipation = 1
@@ -454,7 +484,9 @@ uc.clsant1 <- att_gt(yname = outname[i], tname = "time", idname = "dnum",
                      xformla = covariate, panel = TRUE, bstrap = TRUE, 
                      cband = TRUE, data = data_g9)
 glance(uc.clsant1)
-uc.clsant1
+print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+print(paste(outname[i], "- uc.clsant1", "- att")) %>% put()
+uc.clsant1 %>% put()
 warnings()
 
 listv <- c("v", "v.cls", 
@@ -537,12 +569,17 @@ write_xlsx(attgt_tidy_frame,
 # ------------------------------------------------------------------------------
 
 # Varying period
+
+sep("Varying period, Simple")
+
 sim_v <- list()  # single treatment effect
 aggte_sim_v <- list()
 for (k in 1:length(attgt_list_v)) {
- sim_v[[k]] <- aggte(attgt_list_v[[k]], type = "simple", na.rm = TRUE)
+ print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+ print(paste(outname[i], "-", listv[k], "- sim")) %>% put()
+ sim_v[[k]] <- aggte(attgt_list_v[[k]], type = "simple", na.rm = TRUE) %>% put()
  print(sim_v[[k]])
- warnings()
+ # warnings()
  aggte_sim_v[[k]] <- tidy(sim_v[[k]])
  aggte_sim_v[[k]]$name <- listv[k]
 }
@@ -552,12 +589,16 @@ aggte_sim_v_frame <- aggte_sim_v_frame %>%
  mutate(pretrendtype = "varying",
         outcome = outname[i])
 
+sep("Varying period, Group")
+
 grp_v <- list()  # group specific treatment effect
 aggte_grp_v <- list()
 for (k in 1:length(attgt_list_v)) {
- grp_v[[k]] <- aggte(attgt_list_v[[k]], type = "group", na.rm = TRUE)
+ print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+ print(paste(outname[i], "-", listv[k], "- grp")) %>% put()
+ grp_v[[k]] <- aggte(attgt_list_v[[k]], type = "group", na.rm = TRUE) %>% put()
  print(grp_v[[k]])
- warnings()
+ # warnings()
  aggte_grp_v[[k]] <- tidy(grp_v[[k]])
  aggte_grp_v[[k]]$name <- listv[k]
 }
@@ -571,24 +612,28 @@ aggte_grp_v_frame <- aggte_grp_v_frame %>%
         pretrendtype = "varying",
         outcome = outname[i])
 
+sep("Varying period, Dynamic")
+
 # No event time balancing
 dyn_v <- list() # dynamic treatment effect (event study)
 aggte_dyn_v <- list()
 
 for (k in 1:length(attgt_list_v)) {
-  dyn_v[[k]] <- aggte(attgt_list_v[[k]], type = "dynamic", 
-                      balance_e = NULL, na.rm = TRUE)
-  print(dyn_v[[k]])
-  warnings()
+ print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+ print(paste(outname[i], "-", listv[k], "- dyn")) %>% put()
+ dyn_v[[k]] <- aggte(attgt_list_v[[k]], type = "dynamic", 
+                     balance_e = NULL, na.rm = TRUE) %>% put()
+ print(dyn_v[[k]])
+ # warnings()
   
-  dyn_frame <- tidy(dyn_v[[k]]) %>% 
-    mutate(overall.att = dyn_v[[k]]$overall.att,
-           overall.se = dyn_v[[k]]$overall.se,
-           overall.conf.low = overall.att - qnorm(0.975) * overall.se,
-           overall.conf.high = overall.att + qnorm(0.975) * overall.se,
-           group = ifelse(event.time < 0, "Pre-NHI", "Post-NHI"),
-           name = listv[k])      
-  aggte_dyn_v[[k]] <- dyn_frame
+ dyn_frame <- tidy(dyn_v[[k]]) %>% 
+   mutate(overall.att = dyn_v[[k]]$overall.att,
+          overall.se = dyn_v[[k]]$overall.se,
+          overall.conf.low = overall.att - qnorm(0.975) * overall.se,
+          overall.conf.high = overall.att + qnorm(0.975) * overall.se,
+          group = ifelse(event.time < 0, "Pre-NHI", "Post-NHI"),
+          name = listv[k])      
+ aggte_dyn_v[[k]] <- dyn_frame
 }
 
 aggte_dyn_v_frame <- do.call(rbind, aggte_dyn_v)
@@ -600,23 +645,27 @@ aggte_dyn_v_frame <- aggte_dyn_v_frame %>%
         pretrendtype = "varying",
         outcome = outname[i])
 
+sep("Varying period, Dynamic, Balanced")
+
 # Event time balancing: drop groups not exposed to at least 3 quarters (e=0-2)
 dyn_v_b <- list() # dynamic treatment effect (event study)
 aggte_dyn_v_b <- list()
 
 for (k in 1:length(attgt_list_v)) {
+ print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+ print(paste(outname[i], "-", listv[k], "- dyn_b")) %>% put()
  dyn_v_b[[k]] <- aggte(attgt_list_v[[k]], type = "dynamic", 
-                       balance_e = 2, na.rm = TRUE)
+                      balance_e = 2, na.rm = TRUE) %>% put()
  print(dyn_v_b[[k]])
- warnings()
+ # warnings()
  
  dyn_frame_b <- tidy(dyn_v_b[[k]]) %>%
-   mutate(overall.att = dyn_v_b[[k]]$overall.att,
-          overall.se = dyn_v_b[[k]]$overall.se,
-          overall.conf.low = overall.att - qnorm(0.975) * overall.se,
-          overall.conf.high = overall.att + qnorm(0.975) * overall.se,
-          group = ifelse(event.time < 0, "Pre-NHI", "Post-NHI"),
-          name = listv[k])
+  mutate(overall.att = dyn_v_b[[k]]$overall.att,
+         overall.se = dyn_v_b[[k]]$overall.se,
+         overall.conf.low = overall.att - qnorm(0.975) * overall.se,
+         overall.conf.high = overall.att + qnorm(0.975) * overall.se,
+         group = ifelse(event.time < 0, "Pre-NHI", "Post-NHI"),
+         name = listv[k])
  aggte_dyn_v_b[[k]] <- dyn_frame_b
 }
 
@@ -630,12 +679,17 @@ aggte_dyn_v_frame_b <- aggte_dyn_v_frame_b %>%
         outcome = outname[i])
 
 # Universal, fixed period
+
+sep("Universal (fixed) period, Simple")
+
 sim_u <- list() # single treatment effect
 aggte_sim_u <- list()
 for (k in 1:length(attgt_list_u)) {
- sim_u[[k]] <- aggte(attgt_list_u[[k]], type = "simple", na.rm = TRUE)
+ print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+ print(paste(outname[i], "-", listu[k], "- sim")) %>% put()
+ sim_u[[k]] <- aggte(attgt_list_u[[k]], type = "simple", na.rm = TRUE) %>% put()
  print(sim_u[[k]])
- warnings()
+ # warnings()
  aggte_sim_u[[k]] <- tidy(sim_u[[k]])
  aggte_sim_u[[k]]$name <- listu[k]
 }
@@ -645,14 +699,18 @@ aggte_sim_u_frame <- aggte_sim_u_frame %>%
  mutate(pretrendtype = "fixed",
         outcome = outname[i])
 
+sep("Universal (fixed) period, Group")
+
 grp_u <- list() # group specific treatment effect
 aggte_grp_u <- list()
 for (k in 1:length(attgt_list_u)) {
-        grp_u[[k]] <- aggte(attgt_list_u[[k]], type = "group", na.rm = TRUE)
-        print(grp_u[[k]])
-        warnings()
-        aggte_grp_u[[k]] <- tidy(grp_u[[k]])
-        aggte_grp_u[[k]]$name <- listu[k]
+ print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+ print(paste(outname[i], "-", listu[k], "- grp")) %>% put()
+ grp_u[[k]] <- aggte(attgt_list_u[[k]], type = "group", na.rm = TRUE) %>% put()
+ print(grp_u[[k]])
+ # warnings()
+ aggte_grp_u[[k]] <- tidy(grp_u[[k]])
+ aggte_grp_u[[k]]$name <- listu[k]
 }
 
 aggte_grp_u_frame <- do.call(rbind, aggte_grp_u)
@@ -663,24 +721,28 @@ aggte_grp_u_frame <- aggte_grp_u_frame %>%
         pretrendtype = "fixed",
         outcome = outname[i])
 
+sep("Universal (fixed) period, Dynamic")
+
 # No event time balancing
 dyn_u <- list() # dynamic treatment effect (event study)
 aggte_dyn_u <- list()
 
 for (k in 1:length(attgt_list_u)) {
-  dyn_u[[k]] <- aggte(attgt_list_u[[k]], type = "dynamic", 
-                      balance_e = NULL, na.rm = TRUE)
-  print(dyn_u[[k]])
-  warnings()
+ print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+ print(paste(outname[i], "-", listu[k], "- dyn")) %>% put()
+ dyn_u[[k]] <- aggte(attgt_list_u[[k]], type = "dynamic", 
+                     balance_e = NULL, na.rm = TRUE) %>% put()
+ print(dyn_u[[k]])
+ # warnings()
 
-  dyn_frame <- tidy(dyn_u[[k]]) %>%
-    mutate(overall.att = dyn_u[[k]]$overall.att,
-           overall.se = dyn_u[[k]]$overall.se,
-           overall.conf.low = overall.att - qnorm(0.975) * overall.se,
-           overall.conf.high = overall.att + qnorm(0.975) * overall.se,
-           group = ifelse(event.time < 0, "Pre-NHI", "Post-NHI"),
-           name = listu[k])
-  aggte_dyn_u[[k]] <- dyn_frame
+ dyn_frame <- tidy(dyn_u[[k]]) %>%
+   mutate(overall.att = dyn_u[[k]]$overall.att,
+          overall.se = dyn_u[[k]]$overall.se,
+          overall.conf.low = overall.att - qnorm(0.975) * overall.se,
+          overall.conf.high = overall.att + qnorm(0.975) * overall.se,
+          group = ifelse(event.time < 0, "Pre-NHI", "Post-NHI"),
+          name = listu[k])
+ aggte_dyn_u[[k]] <- dyn_frame
 }
 
 aggte_dyn_u_frame <- do.call(rbind, aggte_dyn_u)
@@ -692,25 +754,28 @@ aggte_dyn_u_frame <- aggte_dyn_u_frame %>%
         pretrendtype = "fixed",
         outcome = outname[i])
 
+sep("Universal (fixed) period, Dynamic, Balanced")
+
 # Event time balancing: drop groups not exposed to at least 3 quarters (e=0-2)
 dyn_u_b <- list() # dynamic treatment effect (event study)
 aggte_dyn_u_b <- list()
 
 for (k in 1:length(attgt_list_u)) {
-  dyn_u_b[[k]] <- aggte(attgt_list_u[[k]], type = "dynamic", 
-                        balance_e = 2, na.rm = TRUE)
-  print(dyn_u_b[[k]])
-  warnings()
+ print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~") %>% put()
+ print(paste(outname[i], "-", listu[k], "- dyn_b")) %>% put()
+ dyn_u_b[[k]] <- aggte(attgt_list_u[[k]], type = "dynamic", 
+                       balance_e = 2, na.rm = TRUE) %>% put()
+ print(dyn_u_b[[k]])
+ # warnings()
   
-  dyn_frame_b <- tidy(dyn_u_b[[k]]) %>%
-    mutate(
-      overall.att = dyn_u_b[[k]]$overall.att,
-      overall.se = dyn_u_b[[k]]$overall.se,
-      overall.conf.low = overall.att - qnorm(0.975) * overall.se,
-      overall.conf.high = overall.att + qnorm(0.975) * overall.se,
-      group = ifelse(event.time < 0, "Pre-NHI", "Post-NHI"),
-      name = listu[k])
-  aggte_dyn_u_b[[k]] <- dyn_frame_b
+ dyn_frame_b <- tidy(dyn_u_b[[k]]) %>%
+   mutate(overall.att = dyn_u_b[[k]]$overall.att,
+          overall.se = dyn_u_b[[k]]$overall.se,
+          overall.conf.low = overall.att - qnorm(0.975) * overall.se,
+          overall.conf.high = overall.att + qnorm(0.975) * overall.se,
+          group = ifelse(event.time < 0, "Pre-NHI", "Post-NHI"),
+          name = listu[k])
+ aggte_dyn_u_b[[k]] <- dyn_frame_b
 }
 
 aggte_dyn_u_frame_b <- do.call(rbind, aggte_dyn_u_b)
@@ -1679,5 +1744,10 @@ its_meta_final_q <- do.call(rbind, meta_summary_df)
 #                                       "Last treated, quarterly")))
 
 write_xlsx(its_meta_final_q, "./output/q_disl/cits_q.xlsx")
+
+
+# Log close
+log_close(footer = TRUE)
+writeLines(readLines(logrecord))
 
 ```

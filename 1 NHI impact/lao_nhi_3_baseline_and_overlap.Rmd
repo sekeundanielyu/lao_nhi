@@ -24,6 +24,14 @@ getwd()
 # Install and load packages
 source("lao_nhi_0_package.r", echo = TRUE)
 
+# Create directories
+if(!dir.exists("./log")) {dir.create("./log")}
+
+# Log
+logpath <- file.path(getwd(), "log", "lao_nhi_3_baseline_and_overlap.log")
+logrecord <- log_open(logpath, autolog = TRUE, show_notes = FALSE)
+log_code()
+
 ```
 <br>
 
@@ -40,21 +48,25 @@ data <- data.cln
 # Check number of district
 data %>% 
   filter(faclevel != "PH") %>% 
-  summarise(count = n_distinct(district)) # total district; 148
+  summarise(count = n_distinct(district)) %>% # total district; 148
+  put()
 
 data %>% 
   filter(faclevel != "PH", treat == 1) %>% 
-  summarise(count = n_distinct(district)) # total district with NHI; 139
+  summarise(count = n_distinct(district)) %>% # total district with NHI; 139
+  put()
 
 data %>% 
   group_by(province) %>% 
   filter(faclevel != "PH") %>% 
-  summarise(count = n_distinct(district))
+  summarise(count = n_distinct(district)) %>%
+  put()
 
 data %>% 
   group_by(province, district) %>% 
   summarize(n = n()) %>% 
-  print(n = Inf)
+  print(n = Inf) %>%
+  put()
 
 # Filter data
 data <- data %>% 
@@ -146,7 +158,7 @@ table1a <- data %>%
 # modify_column_alignment(columns = everything(), align = "center")
 
 table1a
-show_header_names(table1a)
+show_header_names(table1a) %>% put()
 
 # imps: Percentage of population using improved sanitation
 # litr: Literacy rate 15-64 old
@@ -158,7 +170,8 @@ pnumdnum <- data %>%
   summarize(pcount = n_distinct(province),
             dcount = n_distinct(district)) %>%
   mutate(pcount = as.numeric(pcount),
-         dcount = as.numeric(dcount))
+         dcount = as.numeric(dcount)) %>%
+  put()
 
 pdcount <- data %>% 
   group_by(group) %>%
@@ -166,7 +179,8 @@ pdcount <- data %>%
             dcount = n_distinct(district)) %>%
   mutate(pcount = as.numeric(pcount),
          dcount = as.numeric(dcount),
-         p_by_d = pcount / dcount)
+         p_by_d = pcount / dcount) %>%
+  put()
 
 table1 <- data %>%
  filter(quarter == 2016.2) %>%  # filter unique quarter
@@ -176,7 +190,9 @@ table1 <- data %>%
  select(p_by_d, district, group, facnum, facnum2, semp, urba, imps, litr) %>%
  mutate(district = 1) %>%
  mutate(across(semp:litr, ~.x * 100))
-str(table1)
+
+str(table1) %>% 
+  put()
 
 table1c <- table1 %>%
  filter(group %in% c(5, 6, 8, 9)) %>%  # remove never treated
@@ -219,8 +235,9 @@ table1c <- table1 %>%
  add_overall(last = TRUE, col_label = "All control\ngroups\nn={n}") %>%
  modify_footnote(update = everything() ~ NA)  # remove footnote 1
 # modify_column_alignment(columns = everything(), align = "center")
-table1c
-show_header_names(table1c)  # province number not correct!
+table1c %>% put()
+show_header_names(table1c) %>% # province number not correct!
+  put()
 
 table1t <- table1 %>%
  filter(!group == 9) %>%  # remove never treated
@@ -264,8 +281,9 @@ table1t <- table1 %>%
  modify_footnote(update = everything() ~ NA)  # remove footnote 1
 # modify_table_body(~.x %>% dplyr::relocate(stat_0, .after = stat_4))
 # modify_column_alignment(columns = everything(), align = "center")
-table1t
-show_header_names(table1t)  # province number not correct!
+table1t %>% put()
+show_header_names(table1t) %>% # province number not correct!
+  put()
 
 tbl_merge <- 
   tbl_merge(
@@ -306,7 +324,7 @@ data.shp <- data.shp %>%
   left_join(tpop, by = "year") %>%
   mutate(pct = population / total_population)
 
-data.shp %>% distinct(scheme)
+data.shp %>% distinct(scheme) %>% put()
 
 scheme_list <- c("Formal sector Defense",
                  "Formal sector Civil servants",
@@ -398,23 +416,26 @@ data.cln <- read_excel("./data export/02_clean_8_cln_q_dl.xlsx") # district
 
 data.cln %>%
  filter(faclevel != "PH") %>%
- summarise(count = n_distinct(district))
+ summarise(count = n_distinct(district)) %>%
+ put()
 
 data.cln %>%
  filter(faclevel != "PH") %>%
  filter(pnum != 1) %>%
- summarise(count = n_distinct(district))
+ summarise(count = n_distinct(district)) %>%
+ put()
 
 data.num <- data.cln %>%
  filter(pnum != 1) %>%
- filter(faclevel != "PH")
+ filter(faclevel != "PH") %>%
+ put()
 
 data.num <- data.num %>%
   select(quarter, pnum, treat, group) %>%
   mutate(quarter = as.factor(quarter),
          group = as.factor(group))
-unique(data.num$group)
-str(data.num)
+unique(data.num$group) %>% put()
+str(data.num) %>% put()
 
 prov_label <- c("Q3 2016 (Attapeu, Luang Namtha, Xaysomboun)",
                 "Q4 2016 (Salavanh)",
@@ -522,7 +543,7 @@ stat.ovl <- WeightIt::weightit(
   method = "glm",
   estimand = "ATT")
 
-bal.tab(stat.ovl)
+bal.tab(stat.ovl) %>% put()
 bal.plot(stat.ovl, var.name = "prop.score", 
          which = "both", type = "histogram", mirror = TRUE)
          # "both" shows unajusted and adjusted results
@@ -544,7 +565,7 @@ stat.ovl2 <- WeightIt::weightit(
   method = "glm",
   estimand = "ATT")
 
-bal.tab(stat.ovl2)
+bal.tab(stat.ovl2) %>% put()
 bal.plot(stat.ovl2, var.name = "prop.score", 
          which = "both", type = "histogram", mirror = TRUE)
 bal.plot(stat.ovl2, var.name = "prop.score",
@@ -572,8 +593,8 @@ stat.ovl3 <- WeightIt::weightit(
   method = "glm",
   estimand = "ATT")
 
-summary(stat.ovl3)
-bal.tab(stat.ovl3)
+summary(stat.ovl3) %>% put()
+bal.tab(stat.ovl3) %>% put()
 bal.plot(stat.ovl3, var.name = "prop.score", 
          which = "both", type = "histogram", mirror = TRUE)
 bal.plot(stat.ovl3, var.name = "prop.score",
@@ -596,7 +617,7 @@ stat.ovl4 <- WeightIt::weightit(
   method = "glm",
   estimand = "ATT")
 
-bal.tab(stat.ovl4)
+bal.tab(stat.ovl4) %>% put()
 bal.plot(stat.ovl4, var.name = "prop.score",
          which = "both", type = "histogram", mirror = TRUE)
 bal.plot(stat.ovl4, var.name = "prop.score",
@@ -823,7 +844,7 @@ CS_compute <- group_bind %>%
 CS_crosscheck <- left_join(CS_compute, total_bind,
                            by = c("event.time", "intv", "outcome")) %>%
   dplyr::select(contains(c("avgdyn", "util.mean"))) %>%
-  print(n = Inf)
+  print(n = Inf) %>% put()
 
 # The results are identical
 # Average of all units from each cohort by event time is equivalent to
@@ -1000,6 +1021,11 @@ png("graph/sfig_04_pta_cohort.png",
     units = "in",width = 4.75, height = 7, res = 500)
 print(plot)
 dev.off()
+
+
+# Log close
+log_close(footer = TRUE)
+writeLines(readLines(logrecord))
 
 ```
 

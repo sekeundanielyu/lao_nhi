@@ -24,6 +24,14 @@ getwd()
 # Install and load packages
 source("lao_nhi_0_package.r", echo = TRUE)
 
+# Create directories
+if(!dir.exists("./log")) {dir.create("./log")}
+
+# Log
+logpath <- file.path(getwd(), "log", "lao_nhi_1_data.log")
+logrecord <- log_open(logpath, autolog = TRUE, show_notes = FALSE)
+log_code()
+
 ```
 <br>
 
@@ -389,6 +397,10 @@ write_xlsx(data.pop.m.dist, "./data export/01_data_pop_m_d.xlsx")
 write_xlsx(data.pop.m.prov, "./data export/01_data_pop_m_p.xlsx")
 write_xlsx(data.pop.q.dist, "./data export/01_data_pop_q_d.xlsx")
 write_xlsx(data.pop.q.prov, "./data export/01_data_pop_q_p.xlsx")
+
+# Log close
+log_close(footer = TRUE)
+writeLines(readLines(logrecord))
 
 ```
 <br>
