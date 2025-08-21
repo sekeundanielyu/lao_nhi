@@ -1,9 +1,9 @@
-## ----knitr, include=FALSE----------------------------------------------------------------------
+## ----knitr, include=FALSE-----------------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE, warning = TRUE, message = TRUE)
 
 
 
-## ----packages, echo=TRUE, message=FALSE, results="hide"----------------------------------------
+## ----packages, echo=TRUE, message=FALSE, results="hide"-----------------------------
 
 # Set working directory
 library(rstudioapi)
