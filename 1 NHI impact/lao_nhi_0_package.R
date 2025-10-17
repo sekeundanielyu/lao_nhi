@@ -1,9 +1,9 @@
-## ----knitr, include=FALSE-----------------------------------------------------------
+## ----knitr, include=FALSE------------------------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE, warning = TRUE, message = TRUE)
 
 
 
-## ----packages, echo=TRUE, message=FALSE, results="hide"-----------------------------
+## ----packages, echo=TRUE, message=FALSE, results="hide"------------------------------------
 
 # Set working directory
 library(rstudioapi)
@@ -51,11 +51,14 @@ pkg <- c(
 
          # Graphics
          "ggh4x",               # ggplot2 extension
+         "ggtext",              # Markdown/HTML text in plots
          "gridExtra",           # Functions for 'Grid' graphics
          "showtext",            # Easy font management
+         "extrafont",           # Font support for PDF or PostScript
          "sysfonts",            # Access to system and Google fonts
          "MetBrewer",           # Color themes from Met museum
          "RColorBrewer",        # Color palettes for visualizations
+         "patchwork",            # Combine multiple ggplot2 plots
          
          # Output
          "gtsummary",           # Summary tables generation
@@ -82,7 +85,13 @@ load_or_install(pkg)
 
 # Others
 library(readxl);        # Read excel file
-font_add_google("Source Sans Pro")
+font_add_google("Source Sans Pro", "Source Sans Pro")
+font_add("Times New Roman", regular = "/System/Library/Fonts/Supplemental/Times New Roman.ttf")
+showtext_auto()
+
+# Font for PDF graphs ("extrafont")
+font_import(pattern = "SourceSansPro", prompt = FALSE)  # only once
+loadfonts(device = "pdf")
 
 # Warnings to be displayed
 options(nwarnings = 10000)

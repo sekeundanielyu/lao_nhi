@@ -305,9 +305,9 @@ tbl_merge %>%
 ```
 <br>
 
-## Figure 1. Population coverage by social health protection schemes from 2008 to 2021
+## Figure 1-A. Population coverage by social health protection schemes from 2008 to 2021
 <br>
-```{r fig_1, echo=TRUE, message=FALSE, results="hide"}
+```{r fig_1_a, echo=TRUE, message=FALSE, results="hide"}
 
 data.shp <- read_excel("./data import/lao_shp_schemes.xlsx", 
                        sheet = "final") # district
@@ -361,7 +361,7 @@ tpopn <- 7337783
 
 # plot -------------------------------------------------------------------------
 
-plot <- ggplot(
+plot_scheme <- ggplot(
   data.shp, aes(fill = scheme2, y = population, x = year)) + 
   geom_bar(position = position_stack(reverse = TRUE), 
            color = "grey25", stat = "identity", lwd = 0.2) +
@@ -370,14 +370,15 @@ plot <- ggplot(
   scale_fill_manual(values = rev(mypalette), breaks = scheme_label) +
   ylab("Population") + 
   xlab("Year") +
-  annotate("text", x = 7.6, y = 3000000, label = "33%", size = 3.3) +
-  geom_segment(aes(x = 7.7, y = 2750000, xend = 8, yend = 2400000),
+  annotate("text", x = 7.5, y = 2900000, label = "33%", size = 3.1) +
+  geom_segment(aes(x = 7.7, y = 2650000, xend = 8, yend = 2400000),
                arrow = arrow(length = unit(0.05, "in")),
                color = "grey30") +
-  annotate("text", x = 9.6, y = 7250000, label = "93%", size = 3.3) +
-  geom_segment(aes(x = 9.7, y = 7000000, xend = 10, yend = 6650000),
+  annotate("text", x = 9.5, y = 7150000, label = "93%", size = 3.1) +
+  geom_segment(aes(x = 9.7, y = 6900000, xend = 10, yend = 6650000),
                arrow = arrow(length = unit(0.05, "in")),
                color = "grey30") +
+  ggtitle("**Panel A.** Population coverage by health protection scheme, 2008-2021") +
   theme_light() +
   theme(
     text = element_text(family = "Source Sans Pro"),
@@ -386,31 +387,41 @@ plot <- ggplot(
     panel.grid.minor = element_blank(),
     panel.background = element_blank(),
     axis.line = element_line(color = "black"),
-    plot.title = element_text(color = "black", vjust = 1.1, size = 10),
-    plot.margin = margin(t = 0.2, r = 0.05, b = 0.1, l = 0.1, unit = "in"),
-    axis.title.x = element_text(color = "black", size = 10, 
+    plot.title.position = "plot",
+    plot.title = element_markdown(
+      hjust = 0,          # fully left align
+      size = 12,
+      colour = "black",
+      margin = margin(b = 20)),
+    plot.margin = margin(t = 0.1, r = 0.05, b = 0.1, l = 0.3, unit = "in"),
+    axis.title.x = element_text(color = "black", size = 10.5, 
                                 margin = margin(0.15, 0, 0, 0, "in")),
-    axis.title.y = element_text(color = "black", vjust = 3, size = 10),
+    axis.title.y = element_text(color = "black", vjust = 3, size = 10.5),
     axis.ticks = element_line(color = "black"),
-    axis.text.y = element_text(color = "black", size = 10),
-    axis.text.x = element_text(color = "black", size = 10, vjust = 0.5),
+    axis.text.y = element_text(color = "black", size = 10.5),
+    axis.text.x = element_text(color = "black", size = 10, 
+                               angle = 45, vjust = 0.75, hjust = 0.75),
     legend.position = 'bottom',
+          legend.box = "vertical",          # put legend items in a vertical box
+  legend.box.just = "top",
     legend.title = element_blank(),
     legend.key.size = unit(0.2, "in"),
     legend.key.spacing.y = unit(0.025, "in"),
     legend.text = element_text(size = 10)) + 
   guides(fill = guide_legend(ncol = 1, reverse = TRUE, byrow = TRUE))
 
-png("./graph/fig_01_population_scheme.png", 
-    units = "in", width = 6.3, height = 6.5, res = 400)
-print(plot)
+
+# Vector file
+pdf("./graph/fig_01_population_scheme.pdf",
+    width = 6.3, height = 6.6, family = "Source Sans Pro")
+print(plot_scheme)
 dev.off()
 
 ```
 
-## Supplementary Figure 1. Timeline of NHI expansion from 2015 to 2019
+## Figure 1-B. Timeline of NHI expansion from 2015 to 2019
 <br>
-```{r sfig_1, echo=TRUE, message=FALSE, results="hide"}
+```{r fig_1_b, echo=TRUE, message=FALSE, results="hide"}
 
 data.cln <- read_excel("./data export/02_clean_8_cln_q_dl.xlsx") # district
 
@@ -470,9 +481,9 @@ data.num2 <- data.num %>%
   summarise(count = sum(treat)) %>%
   setNames(c("intv_group", "quarter", "count"))
 
-write_xlsx(data.num2, "./output/sfig_01_district_num.xlsx")
+write_xlsx(data.num2, "./output/fig_a_01_district_num.xlsx")
 
-plot <- ggplot(
+plot_district <- ggplot(
   data.num2, aes(fill = intv_group, y = count, x = quarter)) + 
   geom_bar(position = position_stack(reverse = TRUE), 
            color = "grey25", stat = "identity", lwd = 0.2) +
@@ -482,9 +493,10 @@ plot <- ggplot(
   scale_fill_manual(
     values = mypalette,
     breaks = prov_label) +
-  labs(fill = "NHI Introduction (province)", 
+  labs(fill = NULL,
        y = "Number of districts", 
        x = "Quarter") +
+  ggtitle("**Panel B.** Timeline of NHI expansion, 2015-2019") +
   theme_light() +
   theme(
     text = element_text(family = "Source Sans Pro"), # Font style
@@ -493,33 +505,56 @@ plot <- ggplot(
     panel.grid.minor = element_blank(),
     panel.background = element_blank(),
     axis.line = element_line(color = "black"),
-    plot.title = element_text(color = "black", vjust = 1.1, size = 10),
-    plot.margin = margin(t = 0.2, r = 0.05, b = 0.1, l = 0.1, unit = "in"),
-    axis.title.x = element_text(color = "black", size = 10, 
+    plot.title.position = "plot",
+    plot.title = element_markdown(
+      hjust = 0,          # fully left align
+      size = 12,
+      colour = "black",
+      margin = margin(b = 20)),
+    plot.margin = margin(t = 0.1, r = 0.5, b = 0.1, l = 0.1, unit = "in"),
+    axis.title.x = element_text(color = "black", size = 10.5, 
                                 margin = margin(t = 0.15, unit = "in")),
-    axis.title.y = element_text(color = "black", vjust = 2, size = 10),
+    axis.title.y = element_text(color = "black", vjust = 2, size = 10.5),
     axis.ticks = element_line(color = "black"),
-    axis.text.y = element_text(color = "black", size = 10),
-    axis.text.x = element_text(color = "black", size = 9.5, 
+    axis.text.y = element_text(color = "black", size = 10.5),
+    axis.text.x = element_text(color = "black", size = 10, 
                                angle = 45, vjust = 0.75, hjust = 0.75),
-    legend.title = element_text(color = "black", size = 10, 
-                                margin = margin(b = 0.07, unit = "in")),
+    # legend.title = element_text(color = "black", size = 10, 
+    #                             margin = margin(b = 0.07, unit = "in")),
+    legend.position = 'bottom',
+      legend.box = "vertical",          # put legend items in a vertical box
+  legend.box.just = "top",
     legend.key.size = unit(0.2, "in"),
     legend.key.spacing.y = unit(0.025, "in"),
-    legend.text = element_text(size = 10)) +
-  guides(fill = guide_legend(byrow = TRUE))
+    legend.text = element_text(size = 10.5)) +
+guides(fill = guide_legend(ncol = 1, reverse = FALSE, byrow = TRUE))
 
-png(paste("./graph/sfig_01_district_num.png", sep = ""), units = "in",
-    width = 9.5, height = 4.5, res = 500)
-print(plot)
+
+# Vector file
+pdf("./graph/fig_01_district_num.pdf",
+    width = 5.5, height = 6, family = "Source Sans Pro")
+print(plot_district)
 dev.off()
+
+# Combine graphs
+plot_scheme_clean  <- plot_scheme  + theme(plot.margin = margin(r = 30))
+plot_dist_clean <- plot_district + theme(
+  legend.box.margin = margin(t = -35))
+plot_scheme_dist <- plot_scheme_clean + plot_dist_clean + plot_layout(ncol = 2)
+
+# Save
+pdf("./graph/fig_01_scheme_district.pdf",
+    width = 10, height = 6.5, family = "Source Sans Pro")
+print(plot_scheme_dist)
+dev.off()
+
 
 ```
 <br>
 
-## Supplementary Figure 2. Propensity score distribution by control group
+## Supplementary Figure A1. Propensity score distribution by control group
 <br>
-```{r sfig_2, echo=TRUE, fig.height=2.5, fig.width=5}
+```{r fig_a_1, echo=TRUE, fig.height=2.5, fig.width=5}
 
 # Reference
 # https://cran.r-project.org/web/packages/cobalt/vignettes/cobalt.html#why-cobalt
@@ -646,7 +681,7 @@ plot.ovl.all <- lapply(
                    levels = c(0, 1),
                    labels = c("Control", "Intervention")))
 
-write_xlsx(plot.ovl.all, "./output/sfig_02_overlap.xlsx")
+write_xlsx(plot.ovl.all, "./output/fig_a_01_overlap.xlsx")
 
 theme.ps <- function() {
  theme_bw() +
@@ -697,15 +732,16 @@ plot.ovl.mirror.fix <- ggplot() +
 
 plot.ovl.mirror.fix
 
-png("./graph/sfig_02_overlap.png",
-    units = "in", width = 5, height = 2.5, res = 400)
+# Vector file
+pdf("./graph/fig_a_01_overlap.pdf", 
+    width = 5, height = 2.5, family = "Source Sans Pro")
 print(plot.ovl.mirror.fix)
 dev.off()
 
 ```
 <br>
 
-## F. Health service utilization trends
+## B5. Health service utilization trends
 <br>
 ```{r pta, echo=TRUE, warning=TRUE}
 
@@ -853,9 +889,9 @@ CS_crosscheck <- left_join(CS_compute, total_bind,
 
 ```
 
-# Supplementary Figure 3. Quarterly health service utilization trends, overall
+# Supplementary Figure B1. Quarterly health service utilization trends, overall
 <br>
-```{r sfig_3, echo=TRUE, warning=TRUE}
+```{r fig_b_1, echo=TRUE, warning=TRUE}
 
 var_list <- c("opo5r", "ipo5r", "opu5r", "ipu5r", "iplos", "delr")
 var_label <- c("Outpatient visits per 1000, aged ≥ 5",
@@ -873,15 +909,15 @@ total_bind <- total_bind %>%
 xl <- c(min(total_bind$event.time), # x-axis length / index
           max(total_bind$event.time))
 
-write_xlsx(total_bind,"./output/sfig_03_pta_overall.xlsx")
+write_xlsx(total_bind,"./output/fig_b_01_pta_overall.xlsx")
 
 plot <- ggplot(
   total_bind, aes(x = event.time, y = util.mean, 
                   group = intv, color = intv)) + 
   facet_wrap(~outcome2, ncol = 2, scales = "free") + 
   geom_vline(
-    aes(xintercept = 0), linetype = "dashed", 
-    color = "black", alpha = 0.9, linewidth = 0.05) +
+    aes(xintercept = 0), linetype = "99", 
+    color = "grey75", size = 0.2) +
   geom_ribbon(
     data = subset(total_bind, intv == "Intervention"),
     aes(ymin = util.lower.ci, ymax = util.upper.ci),
@@ -924,16 +960,17 @@ plot <- ggplot(
     legend.position.inside =  c(0.1, -0.067)
   )
 
-png("graph/sfig_03_pta_overall.png", 
-    units = "in", width = 5.1, height = 6, res = 500)
+# Vector file
+pdf("./graph/fig_b_01_pta_overall.pdf", 
+    width = 5.1, height = 6, family = "Source Sans Pro")
 print(plot)
 dev.off()
 
 ```
 
-# Supplementary Figure 4. Quarterly health service utilization trends by intervention group
+# Supplementary Figure B2. Quarterly health service utilization trends by intervention group
 <br>
-```{r sfig_4, echo=TRUE, warning=TRUE}
+```{r fig_b_2, echo=TRUE, warning=TRUE}
 
 var_list <- c("opo5r", "ipo5r", "opu5r", "ipu5r", "iplos", "delr")
 var_label_l <- c("Outpatient\nvisits\nper 1000,\naged ≥ 5",
@@ -955,13 +992,13 @@ group_bind <- group_bind %>%
 xl <- c(min(group_bind$event.time), # x-axis length / index
           max(group_bind$event.time))
 
-write_xlsx(group_bind,"./output/sfig_04_pta_cohort.xlsx")
+write_xlsx(group_bind,"./output/fig_b_02_pta_cohort.xlsx")
 
 plot <- ggplot(
   group_bind, aes(x = event.time, y = util.mean, group = intv, color = intv)) +
   facet_grid(outcome2 ~ cohort, scales = "free", switch = "y") +
-  geom_vline(aes(xintercept = 0), linetype = "dashed", 
-             color = "black", alpha = 0.9, linewidth = 0.05) +
+  geom_vline(aes(xintercept = 0), linetype = "99", 
+             color = "grey75", size = 0.2) +
   geom_ribbon(data = subset(group_bind, intv == "Intervention"),
               aes(x = event.time, ymin = util.lower.ci, ymax = util.upper.ci),
               fill = "#c5dec9", color = "#bad9bf", alpha = 0.65, 
@@ -1017,11 +1054,11 @@ plot <- ggplot(
     legend.position.inside =  c(0.05, -0.057)
   )
 
-png("graph/sfig_04_pta_cohort.png",
-    units = "in",width = 4.75, height = 7, res = 500)
+# Vector file
+pdf("./graph/fig_b_02_pta_cohort.pdf", 
+    width = 4.75, height = 7, family = "Source Sans Pro")
 print(plot)
 dev.off()
-
 
 # Log close
 log_close(footer = TRUE)

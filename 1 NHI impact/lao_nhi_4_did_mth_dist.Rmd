@@ -682,6 +682,11 @@ p_by_g_n <- data.its %>%
  summarize(dnum = n_distinct(district))
 p_by_g_n
 
+data.its$month_fac <- factor(format(data.its$month, "%m"),
+                               levels = sprintf("%02d", 1:12),
+                               labels = month.abb)
+unique(data.its$month_fac)
+
 # intv: dummy for control (0) / treatment (1)
 # post: dummy for pre (0) / post (1)
 # event: time
@@ -748,7 +753,7 @@ for (j in pnumlist) {
   # District random effects
   x1 <- c("event", "post", "post_event", "intv",
           "intv_event", "intv_post", "intv_event_post",
-          "facnum")
+          "facnum", "month_fac")
   formula1 <- reformulate(c(x1), response = outname[i])
   its_m <- plm(formula1, data = data.its.m,
                index = c("dnum"), model = "random")
@@ -831,7 +836,7 @@ its_df <- list()
     # District random effect
     x1 <- c("event", "post", "post_event", "intv",
             "intv_event", "intv_post", "intv_event_post",
-            "facnum")
+            "facnum", "month_fac")
     formula1 <- reformulate(c(x1), response = outname[i])
     its_m <- plm(formula1, data = data.its.m,
                  index = c("dnum"), model = "random")
@@ -916,7 +921,7 @@ its_df <- list()
     # District random effect
     x1 <- c("event", "post", "post_event", "intv", 
             "intv_event", "intv_post", "intv_event_post", 
-            "facnum")
+            "facnum", "month_fac")
     formula1 <- reformulate(c(x1), response = outname[i])
     its_m <- plm(formula1, data = data.its.m, index = c("dnum"), model = "random")
     summary(its_m)

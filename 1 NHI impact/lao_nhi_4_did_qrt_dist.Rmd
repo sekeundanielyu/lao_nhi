@@ -150,7 +150,7 @@ outpath <- c("./output/q_disl/")
 ```
 <br>
 
-# H. Robustness checks (Honest DiD)
+# B7. Robustness checks (Honest DiD)
 <br>
 ```{r honest, include=FALSE}
 
@@ -309,6 +309,7 @@ outname <- c(
   # "opo5.raw", "opu5.raw", "ipo5.raw", "ipu5.raw", "ipday.raw",
   # "del.raw", "anc.raw", "pnc.raw",
   # "fic1",
+  
   # rate
   "opo5r", "opu5r", "ipo5r", "ipu5r", "iplos", "delr"
   # "opipo5r", "opipu5r"
@@ -863,7 +864,7 @@ write_xlsx(didsensitivity,
 ```
 <br>
 
-# H. Robustness check: DiD heterogeneity-robust estimators
+# B7. Robustness check: DiD heterogeneity-robust estimators
 <br>
 ```{r hetero, eval=FALSE, include=FALSE}
 
@@ -1172,12 +1173,12 @@ didalt <- bind_rows(etwfe_frame, stacked_frame, impt_gdn_frame,
                                     "Two-stage DiD (Gardner 2021)",
                                     "Extended TWFE DiD (Wooldridge 2021)")))
 
-write_xlsx(didalt, "./output/sfig_09_did_hetero.xlsx")
+write_xlsx(didalt, "./output/fig_b_07_did_hetero.xlsx")
 
 
 ```
 
-# G. Subgroup analyses: district-level poverty status
+# B6. Subgroup analyses: district-level poverty status
 <br>
 ```{r poverty, eval=FALSE, include=FALSE}
 
@@ -1362,11 +1363,11 @@ saiw_tidy_frame <- left_join(saiw_list, saiw_att_list,
                                     "High poverty", 
                                     "Low poverty")))
 
-write_xlsx(saiw_tidy_frame, "./output/sfig_06_did_poverty.xlsx")
+write_xlsx(saiw_tidy_frame, "./output/fig_b_04_did_poverty.xlsx")
 
 ```
 
-# I: Controlled interrupted time series analysis (quarterly)
+# B8: Controlled interrupted time series analysis (quarterly)
 <br>
 ```{r its, eval=FALSE, include=FALSE}
 
@@ -1394,6 +1395,13 @@ p_by_g_n <- data.its %>%
  group_by(group) %>%
  summarize(dnum = n_distinct(district))
 p_by_g_n
+
+# Seasonal dummy
+qtr <- as.yearqtr(as.character(data.its$quarter), format = "%Y.%q")
+data.its$quarter_fac <- factor(format(qtr, "%q"),
+                                 levels = 1:4,
+                                 labels = c("Q1","Q2","Q3","Q4"))
+unique(data.its$quarter_fac)
 
 # intv: dummy for control (0) / treatment (1)
 # post: dummy for pre (0) / post (1)
@@ -1459,7 +1467,7 @@ for (j in pnumlist) {
   # District random effects
   x1 <- c("event", "post", "post_event", "intv",
           "intv_event", "intv_post", "intv_event_post",
-          "facnum")
+          "facnum", "quarter_fac")
   formula1 <- reformulate(c(x1), response = outname[i])
   its_q <- plm(formula1, data = data.its.q,
                index = c("dnum"), model = "random")
@@ -1542,7 +1550,7 @@ its_df <- list()
     # District random effect
     x1 <- c("event", "post", "post_event", "intv",
             "intv_event", "intv_post", "intv_event_post",
-            "facnum")
+            "facnum", "quarter_fac")
     formula1 <- reformulate(c(x1), response = outname[i])
     its_q <- plm(formula1, data = data.its.q,
                  index = c("dnum"), model = "random")
@@ -1627,7 +1635,7 @@ its_df <- list()
     # District random effect
     x1 <- c("event", "post", "post_event", "intv",
             "intv_event", "intv_post", "intv_event_post",
-            "facnum")
+            "facnum", "quarter_fac")
     formula1 <- reformulate(c(x1), response = outname[i])
     its_q <- plm(formula1, data = data.its.q, index = c("dnum"), model = "random")
     summary(its_q)

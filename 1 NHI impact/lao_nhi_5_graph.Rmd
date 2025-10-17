@@ -62,8 +62,7 @@ var_label_l <- c("Outpatient\nvisits\nper 1000,\naged ≥ 5",
 layer.64 <-
   list(
     geom_vline(aes(xintercept = 0), 
-             linetype = "dashed", color = "black", 
-             alpha = 0.9, linewidth = 0.05),
+             linetype = "99", color = "grey75", linewidth = 0.2),
     geom_rect(aes(xmin = 0, xmax = Inf, 
                 ymin = overall.conf.low, ymax = overall.conf.high), 
             fill = "#c5dec9", alpha = 0.15),
@@ -80,8 +79,8 @@ layer.64 <-
     geom_segment(aes(x = 0, xend = Inf, 
                    y = overall.att, yend = overall.att), 
                color = "#d62b47", linewidth = 0.2, alpha = 0.5),
-    geom_text(x = Inf, y = Inf, label = expression(Delta),
-            family = "Source Sans Pro", color = "black",
+    geom_text(x = Inf, y = Inf, label = "\u0394", # expression(Delta)
+            family = "serif", color = "black",
             vjust = 1.5, hjust = 6, size = 2),
     geom_text(aes(x = x.pctchange, y = Inf, label = pctchange),
             family = "Source Sans Pro", color = "black",
@@ -120,9 +119,9 @@ theme.64 <- function() {
 
 ```
 
-# Main Figure 3. DiD analysis
+# Figure 2. DiD analysis
 <br>
-```{r fig_3_main, eval=FALSE, include=FALSE}
+```{r fig_2, eval=FALSE, include=FALSE}
 
 # Load data
 plot.dyn <- var_list %>%
@@ -138,7 +137,7 @@ plot.dyn <- var_list %>%
          pctchange = if_else(event.time != 0, NA, pctchange)) %>%
   filter(name == "uc.cls")
 
-write_xlsx(plot.dyn, paste0("./output/", "fig_03_did_main.xlsx"))
+write_xlsx(plot.dyn, paste0("./output/", "fig_02_did_main.xlsx"))
 
 # Plot -------------------------------------------------------------------------
 
@@ -147,9 +146,8 @@ xl <- range(plot.dyn$event.time) # x-axis length / index
 plot <- 
   ggplot(plot.dyn, aes(x = event.time, y = estimate)) +
   facet_wrap(~outcome2, ncol = 2, scales = "free") +
-  geom_vline(
-    aes(xintercept = 0), linetype = "dashed", col = "black", 
-    alpha = 0.9, linewidth = 0.05) +
+  geom_vline(aes(xintercept = 0), linetype = "99", 
+             col = "grey75", linewidth = 0.2) +
   geom_rect(aes(xmin = 0, xmax = Inf, ymin = overall.conf.low, 
                 ymax = overall.conf.high), fill = "#c5dec9", alpha = 0.15) +
   geom_hline(aes(yintercept = 0), col = "black", linewidth = 0.175) +
@@ -164,9 +162,9 @@ plot <-
                  size = 0.3, color = "#006918") +
   geom_segment(aes(x = 0, xend = Inf, y = overall.att, yend = overall.att),
                color = "#d62b47", linewidth = 0.2, alpha = 0.5) +
-  geom_text(x = 1.7, y = Inf, label = expression(Delta), 
-            family = "Source Sans Pro", color = "black", 
-            vjust = 1.5, size = 2) +
+  geom_text(x = 1.7, y = Inf, label = "\u0394", # expression(Delta)
+            family = "serif", color = "black", 
+            vjust = 1.5, size = 2, inherit.aes = FALSE) +
   geom_text(aes(x = 2.5, y = Inf, label = pctchange), 
             family = "Source Sans Pro", color = "black", 
             vjust = 1.5, size = 2) +
@@ -197,17 +195,18 @@ plot <-
     legend.text = element_text(size = 7),
     legend.position.inside = c(0.75, 0.1))
 
-png(paste0("./graph/", "fig_03_did_main.png"), 
-    units = "in", width = 5.1, height = 6, res = 500)
+# Vector file
+pdf("./graph/fig_02_did_main.pdf", width = 5.1, height = 6, 
+    family = "Source Sans Pro")
 print(plot)
 dev.off()
 
 ```
 <br>
 
-# Supplementary Figure 5. DiD analysis by facility type
+# Supplementary Figure B3. DiD analysis by facility type
 <br>
-```{r sfig_5_facility, eval=FALSE, include=FALSE}
+```{r fig_b_3_facility, eval=FALSE, include=FALSE}
 
 # Load data
 read_data <- function(fl, vl) {
@@ -241,7 +240,7 @@ plot.fac <- map_dfr(c("dh", "hc"),
                        labels = c("District hospitals", "Health centers"))) %>%
   filter(name == "uc.cls")
 
-write_xlsx(plot.fac, paste0("./output/", "sfig_05_did_facility.xlsx"))
+write_xlsx(plot.fac, paste0("./output/", "fig_b_03_did_facility.xlsx"))
 
 # Plot -------------------------------------------------------------------------
 
@@ -250,8 +249,8 @@ xl <- range(plot.fac$event.time) # x-axis length / index
 plot <- ggplot(
   plot.fac, aes(x = event.time, y = estimate)) + 
   facet_grid(outcome2 ~ facl, scales = "free", switch = "y") + 
-  geom_vline(aes(xintercept = 0), linetype = "dashed", 
-             color = "black", alpha = 0.9, linewidth = 0.05) +
+  geom_vline(aes(xintercept = 0), linetype = "99", 
+             color = "grey75", size = 0.2) +
   geom_hline(aes(yintercept = 0), color = "black", linewidth = 0.175) +
   geom_rect(aes(xmin = 0, xmax = Inf, ymin = overall.conf.low, 
                 ymax = overall.conf.high), fill = "#c5dec9", alpha = 0.15) +
@@ -266,8 +265,8 @@ plot <- ggplot(
   geom_point(size = 0.6, color = "#006918") +
   geom_linerange(aes(ymin = conf.low, ymax = conf.high), 
                  size = 0.3, color = "#006918") +
-  geom_text(x = 1.5, y = Inf, label = expression(Delta), 
-            family = "Source Sans Pro", color = "black", vjust = 1.5, size = 2) +
+  geom_text(x = 1.5, y = Inf, label = "\u0394", 
+            family = "serif", color = "black", vjust = 1.5, size = 2) +
   geom_text(aes(x = 2.7, y = Inf, label = pctchange), 
             family = "Source Sans Pro", color = "black", vjust = 1.5, size = 2) +
 #  geom_text(aes(x = -7, y = Inf, label = payment), 
@@ -298,19 +297,20 @@ plot <- ggplot(
     legend.text = element_text(size = 6),
     legend.position.inside = c(0.75, 0.1))
 
-png(paste0("./graph/", "sfig_05_did_facility.png"), 
-    units = "in", width = 4, height = 5.5, res = 500)
+# Vector file
+pdf("./graph/fig_b_03_did_facility.pdf", width = 4, height = 5.5, 
+    family = "Source Sans Pro")
 print(plot)
 dev.off()
 
 ```
 <br>
 
-# Supplementary Figure 6. DiD analysis by district-level poverty status
+# Supplementary Figure B4. DiD analysis by district-level poverty status
 <br>
-```{r sfig_6_poverty, eval=FALSE, include=FALSE}
+```{r fig_b_4_poverty, eval=FALSE, include=FALSE}
 
-plot.pov <- read_excel("./output/sfig_06_did_poverty.xlsx")
+plot.pov <- read_excel("./output/fig_b_04_did_poverty.xlsx")
 plot.pov <- plot.pov %>%
   filter(pgroup != "Overall") %>%
   mutate(outcome2 = factor(outcome, 
@@ -322,7 +322,7 @@ plot.pov <- plot.pov %>%
          pctchange = scales::percent(oval.change, accuracy = 0.1),
          pctchange = if_else(event.time != 0, NA, pctchange))
 
-write_xlsx(plot.pov, paste0("./output/", "sfig_06_did_poverty.xlsx"))
+write_xlsx(plot.pov, paste0("./output/", "fig_b_04_did_poverty.xlsx"))
 
 # Plot -------------------------------------------------------------------------
 
@@ -331,21 +331,21 @@ xl <- range(plot.pov$event.time) # x-axis length / index
 plot <- ggplot(
   plot.pov, aes(x = event.time, y = estimate, color = pgroup, shape = pgroup)) + 
   facet_wrap(~outcome2, ncol = 2, scales = "free") +
-  geom_vline(aes(xintercept = 0), linetype = "dashed", 
-             color = "black", alpha = 0.9, linewidth = 0.05) +
+  geom_vline(aes(xintercept = 0), linetype = "99", 
+             color = "grey75", size = 0.2) +
   geom_hline(aes(yintercept = 0), color = "black", linewidth = 0.175) +
   geom_point(position = position_dodge2(width = 0.6), size = 0.9) +
   geom_linerange(aes(x = event.time, ymin = conf.low, ymax = conf.high), 
                  position = position_dodge2(width = 0.6), size = 0.3) +
-  geom_text(x = 0.7, y = Inf, label = expression(Delta), 
-            family = "Source Sans Pro", color = "#FC4E07", 
+  geom_text(x = 0.7, y = Inf, label = "\u0394", 
+            family = "serif", color = "#FC4E07", 
             vjust = 1.5, size = 2) +
   geom_text(data = subset(plot.pov, pgroup == "High poverty"),
             aes(x = 1.5, y = Inf, label = pctchange), 
             family = "Source Sans Pro", color = "#FC4E07", 
             vjust = 1.5, size = 2) +
-  geom_text(x = 2.7, y = Inf, label = expression(Delta), 
-            family = "Source Sans Pro", color = "#00AFBB", 
+  geom_text(x = 2.7, y = Inf, label = "\u0394", 
+            family = "serif", color = "#00AFBB", 
             vjust = 1.5, size = 2) +
   geom_text(data = subset(plot.pov, pgroup == "Low poverty"),
             aes(x = 3.5, y = Inf, label = pctchange), 
@@ -380,17 +380,18 @@ plot <- ggplot(
     legend.margin = margin(t = 0, r = 0, b = 0, l = 0, unit = "in"),
     legend.position = c(0.1, -0.065))
 
-png(paste0("./graph/", "sfig_06_did_poverty.png"), 
-    units = "in", width = 5.1, height = 6, res = 500)
+# Vector file
+pdf("./graph/fig_b_04_did_poverty.pdf", width = 5.1, height = 6, 
+    family = "Source Sans Pro")
 print(plot)
 dev.off()
 
 ```
 <br>
 
-# Supplementary Figure 7. DiD analysis by intervention group
+# Supplementary Figure B5. DiD analysis by intervention group
 <br>
-```{r sfig_7_group, eval=FALSE, include=FALSE}
+```{r fig_b_5_group, eval=FALSE, include=FALSE}
 
 # Load data
 plot.grp.all <- var_list %>%
@@ -428,7 +429,7 @@ plot.grp <- plot.grp %>%
   mutate(x.pctchange = max(event.time) - 0.8) %>% 
   filter(name == "uc.cls")
 
-write_xlsx(plot.grp, paste0("./output/", "sfig_07_did_group.xlsx"))
+write_xlsx(plot.grp, paste0("./output/", "fig_b_05_did_group.xlsx"))
 
 # Plot -------------------------------------------------------------------------
 
@@ -442,18 +443,19 @@ plot <- ggplot(
   layer.64 +  # Add the layers
   theme.64()  # Add the theme
 
-png(paste0("./graph/","sfig_07_did_group.png"), 
-    units = "in", width = 4.75, height = 7, res = 500)
+# Vector file
+pdf("./graph/fig_b_05_did_group.pdf", width = 4.75, height = 7, 
+    family = "Source Sans Pro")
 print(plot)
 dev.off()
 
 ```
 <br>
 
-# Supplementary Figure 8. DiD analysis with adjusted model specifications 
+# Supplementary Figure B6. DiD analysis with adjusted model specifications 
 # (balanced, last-treated, no covariate)
 <br>
-```{r sfig_8_adjust, eval=FALSE, include=FALSE}
+```{r fig_b_6_adjust, eval=FALSE, include=FALSE}
 
 # Load data
 plot.dyn <- var_list %>%
@@ -491,7 +493,7 @@ plot.ajt <- rbind(plot.dyn, plot.dyn.b.new) %>%
   group_by(name) %>%
   mutate(x.pctchange = max(event.time) - 1.1)
 
-write_xlsx(plot.ajt, paste0("./output/", "sfig_08_did_adjust.xlsx"))
+write_xlsx(plot.ajt, paste0("./output/", "fig_b_06_did_adjust.xlsx"))
 
 
 # Plot -------------------------------------------------------------------------
@@ -506,19 +508,20 @@ plot <- ggplot(
   layer.64 +  # Add the layers
   theme.64()  # Add the theme
 
-png(paste0("./graph/", "sfig_08_did_adjust.png"), 
-    units = "in", width = 4.75, height = 7, res = 500)
+# Vector file
+pdf("./graph/fig_b_06_did_adjust.pdf", width = 4.75, height = 7, 
+    family = "Source Sans Pro")
 print(plot)
 dev.off()
 
 ```
 <br>
 
-# Supplementary Figure 9. Difference-in-differences analysis using alternative heterogeneity-robust estimators
+# Supplementary Figure B7. Difference-in-differences analysis using alternative heterogeneity-robust estimators
 <br>
-```{r sfig_9_hetero, eval=FALSE, include=FALSE}
+```{r fig_b_7_hetero, eval=FALSE, include=FALSE}
 
-data.htr <- read_excel("./output/sfig_09_did_hetero.xlsx")
+data.htr <- read_excel("./output/fig_b_07_did_hetero.xlsx")
 unique(data.htr$method)
 
 data.htr <- data.htr %>%
@@ -531,8 +534,8 @@ xl <- range(data.htr$event.time) # x-axis length / index
 plot <- ggplot(
   data.htr, aes(x = event.time, y = estimate, color = method)) + 
   facet_wrap(~ outcome, ncol = 2, scales = "free") +
-  geom_vline(aes(xintercept = 0), linetype = "dashed", color = "black", 
-             alpha = 0.9, linewidth = 0.05) +
+  geom_vline(aes(xintercept = 0), linetype = "99", 
+             color = "grey75", linewidth = 0.2) +
   geom_hline(aes(yintercept = 0), color = "black", linewidth = 0.175) +
   geom_point(position = position_dodge2(width = 0.6), size = 0.6) +
   geom_linerange(aes(x = event.time, ymin = conf.low, ymax = conf.high), 
@@ -567,17 +570,18 @@ plot <- ggplot(
     legend.margin = margin(l = -0.4, unit = "in")) +
   guides(col = guide_legend(ncol = 3, byrow = TRUE))
 
-png(paste0("./graph/", "sfig_09_did_hetro.png"), 
-    units = "in", width = 5.1, height = 6, res = 500)
+# Vector file
+pdf("./graph/fig_b_07_did_hetro.pdf", width = 5.1, height = 6, 
+    family = "Source Sans Pro")
 print(plot)
 dev.off()
 
 ```
 <br>
 
-# Supplementary Figure 10. DiD analysis with count data
+# Supplementary Figure B8. DiD analysis with count data
 <br>
-```{r sfig_10_count, eval=FALSE, include=FALSE}
+```{r fig_b_8_count, eval=FALSE, include=FALSE}
 
 # Load data
 var_list_c <- c("opo5", "ipo5", "opu5", "ipu5", "ipday", "del")
@@ -620,7 +624,7 @@ plot.cnt <- plot.cnt %>%
     x.pctchange = max(event.time) - 1.1) %>%
   filter(name == "uc.cls")
 
-write_xlsx(plot.cnt, paste0("./output/","sfig_10_did_count.xlsx"))
+write_xlsx(plot.cnt, paste0("./output/","fig_b_08_did_count.xlsx"))
 
 # Plot -------------------------------------------------------------------------
 
@@ -634,17 +638,18 @@ plot <- ggplot(
   layer.64 +  # Add the layers
   theme.64()  # Add the theme
 
-png(paste0("./graph/", "sfig_10_did_count.png"), 
-    units = "in", width = 4.75, height = 7, res = 500)
+# Vector file
+pdf("./graph/fig_b_08_did_count.pdf", width = 4.75, height = 7, 
+    family = "Source Sans Pro")
 print(plot)
 dev.off()
 
 ```
 <br>
 
-# Supplementary Figure 11. DiD analysis using monthly data
+# Supplementary Figure B9. DiD analysis using monthly data
 <br>
-```{r sfig_11_month, eval=FALSE, include=FALSE}
+```{r fig_b_9_month, eval=FALSE, include=FALSE}
 
 # Load data
 plot.dyn <- var_list %>%
@@ -682,7 +687,7 @@ plot.ajt <- rbind(plot.dyn, plot.dyn.b.new) %>%
   group_by(name) %>%
   mutate(x.pctchange = max(event.time) - 4) # higher number -> move to the left
 
-write_xlsx(plot.ajt, paste0("./output/","sfig_11_did_month.xlsx"))
+write_xlsx(plot.ajt, paste0("./output/","fig_b_09_did_month.xlsx"))
 
 
 # Plot -------------------------------------------------------------------------
@@ -697,16 +702,17 @@ plot <- ggplot(
   layer.64 +  # Add the layers
   theme.64()  # Add the theme
 
-png(paste0("./graph/", "sfig_11_did_month.png"), 
-    units = "in", width = 4.75, height = 7, res = 500)
+# Vector file
+pdf("./graph/fig_b_09_did_month.pdf", width = 4.75, height = 7, 
+    family = "Source Sans Pro")
 print(plot)
 dev.off()
 
 ```
 
-# Supplementary Figure 12. Robustness to violation of parallel trends
+# Supplementary Figure B10. Robustness to violation of parallel trends
 <br>
-```{r sfig_12_honest, eval=FALSE, include=FALSE}
+```{r fig_b_10_honest, eval=FALSE, include=FALSE}
 
 # Load data
 var_list_h <- var_list[1:3] # "opo5r" "ipo5r" "opu5r"
@@ -748,7 +754,7 @@ plot.hon <- plot.hon %>%
   mutate(M2 = coalesce(M2, M)) %>% 
   filter(name == "uc.cls")
 
-write_xlsx(plot.hon, paste0("./output/", "sfig_12_did_honest.xlsx"))
+write_xlsx(plot.hon, paste0("./output/", "fig_b_10_did_honest.xlsx"))
 
 # Plot -------------------------------------------------------------------------
 
@@ -796,17 +802,18 @@ plot <- ggplot(
     legend.position = c(0.08, -0.19)) +
   guides(col = guide_legend(nrow = 1, reverse = TRUE)) # Reverse legend order
 
-png(paste0("./graph/", "sfig_12_did_honest.png"), 
-    units = "in", width = 4, height = 3.5, res = 500)
+# Vector file
+pdf("./graph/fig_b_10_did_honest.pdf", width = 4, height = 3.5, 
+    family = "Source Sans Pro")
 print(plot)
 dev.off()
 
 ```
 <br>
 
-# Supplementary Figure 13. Controlled interrupted time series analyses
+# Supplementary Figure B11. Controlled interrupted time series analyses
 <br>
-```{r sfig_13_cits, eval=FALSE, include=FALSE}
+```{r fig_b_11_cits, eval=FALSE, include=FALSE}
 
 its_meta_final_q <- read_excel("./output/q_disl/cits_q.xlsx")
 its_meta_final_m <- read_excel("./output/m_disl/cits_m.xlsx")
@@ -835,14 +842,14 @@ plot.its <- its_meta_final %>%
                                       "Never-treated, quarterly", 
                                       "Last-treated, quarterly")))
 
-write_xlsx(plot.its, "./output/sfig_13_cits.xlsx")
+write_xlsx(plot.its, "./output/fig_b_11_cits.xlsx")
 
 plot <- plot.its %>%
   ggplot(aes(y = label, x = estimate, color = model, shape = model)) + 
+  geom_vline(xintercept = 0, color = "grey75", linetype = "99", size = 0.2) +
   geom_point(size = 0.8, position = position_dodge2(width = 0.5)) +
   geom_linerange(size = 0.3,aes(xmin = lowerci, xmax = upperci),
                  position = position_dodge2(width = 0.5)) +
-  geom_vline(xintercept = 0, linetype = "dashed", size = 0.3) +
   facet_wrap(.~outcome2, ncol = 2, scales = "free") + #
   scale_y_discrete(
     labels = c("Parallel trend (beta5)" =
@@ -896,11 +903,11 @@ plot <- plot.its %>%
   guides(col = guide_legend(ncol = 2, reverse = TRUE),
          shape = guide_legend(ncol = 2, reverse = TRUE))
 
-png(paste0("./graph/", "sfig_13_cits.png"), 
-      units = "in", width = 5.5, height = 6, res = 500)
+# Vector file
+pdf("./graph/fig_b_11_cits.pdf", width = 5.5, height = 6, 
+    family = "Source Sans Pro")
 print(plot)
 dev.off()
-
 
 # Log close
 log_close(footer = TRUE)
