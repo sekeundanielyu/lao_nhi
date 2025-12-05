@@ -106,7 +106,7 @@ gen group_0 = group
 recode group_0 (9=0) 
 
 *------------------------------------------------------------------------------*
-* Figure 3
+* Figure 3. Difference-in-differences estimates by utilization outcome
 *------------------------------------------------------------------------------*
 
 /*
@@ -147,7 +147,7 @@ forvalues i = 1/`vl' {
 
 * Export NHI estimates
 esttab tbl_fig3_opo5r tbl_fig3_opu5r tbl_fig3_ipo5r ///
-	   tbl_fig3_ipu5r tbl_fig3_iplos tbl_fig3_delr ////
+	   tbl_fig3_ipu5r tbl_fig3_iplos tbl_fig3_delr ///
 using "stata/output/fig_03_did.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
@@ -174,10 +174,12 @@ restore
 
 
 *------------------------------------------------------------------------------*
-* Appendix Figure S5: DiD analysis by facility type
+* Appendix Figure A2: DiD analysis by facility type
 *------------------------------------------------------------------------------*
 
-/***** District hospitals *****/
+* ----------------------------------------------------------
+* District hospitals
+* ----------------------------------------------------------
 
 import excel "$dir/data export/02_clean_8_cln_q_fl.xlsx", firstrow clear
 
@@ -220,12 +222,13 @@ forvalues i = 1/`vl' {
 
 * Export NHI estimates
 esttab tbl_sfig5_dh_opo5r tbl_sfig5_dh_opu5r tbl_sfig5_dh_ipo5r ///
-	   tbl_sfig5_dh_ipu5r tbl_sfig5_dh_iplos tbl_sfig5_dh_delr ////
+	   tbl_sfig5_dh_ipu5r tbl_sfig5_dh_iplos tbl_sfig5_dh_delr ///
 using "stata/output/sfig_05_did_facility_dh.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
-
-/***** Health centers *****/
+* ----------------------------------------------------------
+* Health centers
+* ----------------------------------------------------------
 
 import excel "$dir/data export/02_clean_8_cln_q_fl.xlsx", firstrow clear
 
@@ -266,7 +269,7 @@ forvalues i = 1/`vl' {
 
 * Export NHI estimates
 esttab tbl_sfig5_hc_opo5r tbl_sfig5_hc_opu5r tbl_sfig5_hc_ipo5r ///
-	   tbl_sfig5_hc_ipu5r tbl_sfig5_hc_iplos tbl_sfig5_hc_delr ////
+	   tbl_sfig5_hc_ipu5r tbl_sfig5_hc_iplos tbl_sfig5_hc_delr ///
 using "stata/output/sfig_05_did_facility_hc.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
@@ -289,7 +292,7 @@ graph export "stata/graph/sfig_05_did_facility.pdf", replace
 
 
 *------------------------------------------------------------------------------*
-* Appendix Figure S6: DiD analysis by district-level poverty status
+* Appendix Figure A3: DiD analysis by district-level poverty status
 *------------------------------------------------------------------------------*
 
 ssc install event_plot, replace
@@ -345,7 +348,9 @@ forvalues k = 0/4 {
 	gen lag_`k' = rt == `k'
 	}
 
+* ----------------------------------------------------------
 * High-poverty area *
+* ----------------------------------------------------------
 
 local varlist opo5r opu5r ipo5r ipu5r iplos delr
 local labels `" "Outpatient ≥5" "Outpatient <5" "Inpatient ≥5" "Inpatient <5" "Inpatient LOS" "Institutional birth"  "'
@@ -376,12 +381,13 @@ forvalues i = 1/`vl' {
 
 * Export NHI estimates
 esttab tbl_sfig6_high_opo5r tbl_sfig6_high_opu5r tbl_sfig6_high_ipo5r ///
-	   tbl_sfig6_high_ipu5r tbl_sfig6_high_iplos tbl_sfig6_high_delr ////
+	   tbl_sfig6_high_ipu5r tbl_sfig6_high_iplos tbl_sfig6_high_delr ///
 using "stata/output/sfig_06_did_poverty_high.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
-
+* ----------------------------------------------------------
 * Low-poverty area *
+* ----------------------------------------------------------
 
 local varlist opo5r opu5r ipo5r ipu5r iplos delr
 local labels `" "Outpatient ≥5" "Outpatient <5" "Inpatient ≥5" "Inpatient <5" "Inpatient LOS" "Institutional birth"  "'
@@ -412,7 +418,7 @@ forvalues i = 1/`vl' {
 
 * Export NHI estimates
 esttab tbl_sfig6_low_opo5r tbl_sfig6_low_opu5r tbl_sfig6_low_ipo5r ///
-	   tbl_sfig6_low_ipu5r tbl_sfig6_low_iplos tbl_sfig6_low_delr ////
+	   tbl_sfig6_low_ipu5r tbl_sfig6_low_iplos tbl_sfig6_low_delr ///
 using "stata/output/sfig_06_did_poverty_low.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
@@ -435,7 +441,7 @@ graph export "stata/graph/sfig_06_did_poverty.pdf", replace
 
 
 *------------------------------------------------------------------------------*
-* Appendix Figure S7: DiD analysis by intervention group
+* Appendix Figure A4: DiD analysis by intervention group
 *------------------------------------------------------------------------------*
 
 import excel "$dir/data export/02_clean_8_cln_q_dl.xlsx", firstrow clear
@@ -498,7 +504,7 @@ forvalues i = 1/`vl' {
 
 * Export NHI estimates
 esttab tbl_sfig7_opo5r tbl_sfig7_opu5r tbl_sfig7_ipo5r ///
-	   tbl_sfig7_ipu5r tbl_sfig7_iplos tbl_sfig7_delr ////
+	   tbl_sfig7_ipu5r tbl_sfig7_iplos tbl_sfig7_delr ///
 using "stata/output/sfig_07_did_group.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
@@ -533,7 +539,7 @@ graph export "stata/graph/sfig_07_did_group.pdf", replace
 
 
 *------------------------------------------------------------------------------*
-* Appendix Figure S8: DiD analysis with adjusted model specifications
+* Appendix Figure A5: DiD analysis with adjusted model specifications
 *------------------------------------------------------------------------------*
 
 import excel "$dir/data export/02_clean_8_cln_q_dl.xlsx", firstrow clear
@@ -561,8 +567,9 @@ forvalues i = 1/`vl' {
     local m: word `i' of `varlist'
 	local t: word `i' of `labels'	
 
-	
-/***** base *****/
+* ----------------------------------------------------------
+* base model
+* ----------------------------------------------------------
 
 csdid `m' facnum semp urba litr imps, ivar(dnum) time(time) gvar(group_0) ///
         method(dripw) agg(event) long2 notyet wboot(reps(1000)) cluster(pnum) ///
@@ -576,14 +583,17 @@ csdid `m' facnum semp urba litr imps, ivar(dnum) time(time) gvar(group_0) ///
         ytitle("ATT", size(tiny))      
     graph save "stata/graph/temp/sfig_08_did_adjust_base_`m'.gph", replace
 
-/***** Balanced NHI exposure (e=0-2) *****/
+* ----------------------------------------------------------
+* Balanced NHI exposure (e=0-2)
+* ----------------------------------------------------------
 
 * Equation 3.11 from Callaway and Sant'Anna (2021) is implementable in R but not available through 'xthdidregress' or 'csdid'.
 
+* ----------------------------------------------------------
+* Last-treated units as control
+* ----------------------------------------------------------
 
-/***** Last-treated units as control *****/
-
-	csdid `m' facnum semp urba litr imps, ivar(dnum) time(time) gvar(group_0) method(dripw) agg(event) long2 wboot(reps(1000)) cluster(pnum) rseed(555) replace
+csdid `m' facnum semp urba litr imps, ivar(dnum) time(time) gvar(group_0) method(dripw) agg(event) long2 wboot(reps(1000)) cluster(pnum) rseed(555) replace
 	estimates store tbl_sfig8_last_`m'
 
 	csdid_plot, title("`t' (last)", size(vsmall)) legend(off) ///
@@ -593,10 +603,11 @@ csdid `m' facnum semp urba litr imps, ivar(dnum) time(time) gvar(group_0) ///
         ytitle("ATT", size(tiny))      
     graph save "stata/graph/temp/sfig_08_did_adjust_last_`m'.gph", replace
 
-	
-/***** No covariate (unconditional Parallel Trend Assumption) *****/
+* ----------------------------------------------------------
+* No covariate (unconditional Parallel Trend Assumption)
+* ----------------------------------------------------------
 
-	csdid `m', ivar(dnum) time(time) gvar(group_0) method(dripw) agg(event) long2 notyet wboot(reps(1000)) cluster(pnum) rseed(555) replace
+csdid `m', ivar(dnum) time(time) gvar(group_0) method(dripw) agg(event) long2 notyet wboot(reps(1000)) cluster(pnum) rseed(555) replace
 	estimates store tbl_sfig8_nocov_`m'
 
 	csdid_plot, title("`t' (no covarite)", size(vsmall)) legend(off) ///
@@ -610,18 +621,18 @@ csdid `m' facnum semp urba litr imps, ivar(dnum) time(time) gvar(group_0) ///
 
 * Export NHI estimates
 esttab tbl_sfig8_base_opo5r tbl_sfig8_base_opu5r tbl_sfig8_base_ipo5r ///
-	   tbl_sfig8_base_ipu5r tbl_sfig8_base_iplos tbl_sfig8_base_delr ////
-using "stata/output/sfig_08_did_adjust_base.xlsx", ///
+	   tbl_sfig8_base_ipu5r tbl_sfig8_base_iplos tbl_sfig8_base_delr ///
+	   using "stata/output/sfig_08_did_adjust_base.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
 esttab tbl_sfig8_last_opo5r tbl_sfig8_last_opu5r tbl_sfig8_last_ipo5r ///
-	   tbl_sfig8_last_ipu5r tbl_sfig8_last_iplos tbl_sfig8_last_delr ////
-using "stata/output/sfig_08_did_adjust_last.xlsx", ///
-mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
+	   tbl_sfig8_last_ipu5r tbl_sfig8_last_iplos tbl_sfig8_last_delr ///
+	   using "stata/output/sfig_08_did_adjust_last.xlsx", ///
+	   mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
 esttab tbl_sfig8_nocov_opo5r tbl_sfig8_nocov_opu5r tbl_sfig8_nocov_ipo5r ///
-	   tbl_sfig8_nocov_ipu5r tbl_sfig8_nocov_iplos tbl_sfig8_nocov_delr ////
-using "stata/output/sfig_08_did_adjust_nocov.xlsx", ///
+	   tbl_sfig8_nocov_ipu5r tbl_sfig8_nocov_iplos tbl_sfig8_nocov_delr ///
+	   using "stata/output/sfig_08_did_adjust_nocov.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
 * Generate graph
@@ -650,7 +661,7 @@ graph export "stata/graph/sfig_08_did_adjust.pdf", replace
 
 
 *------------------------------------------------------------------------------*
-* Appendix Figure S9: DiD analysis using alternative heterogeneity-robust estimators
+* Appendix Figure A6: DiD analysis using alternative heterogeneity-robust estimators
 *------------------------------------------------------------------------------*
 
 import excel "$dir/data export/02_clean_8_cln_q_dl.xlsx", firstrow clear
@@ -667,8 +678,9 @@ gen group_org = group
 gen group_0 = group
 recode group_0 (9=0) 
 
-
-/***** Extended TWFE DID (Wooldrigde 2021) *****/
+* ---------------------------------------------------------
+* Extended TWFE DID (Wooldrigde 2021)
+* ----------------------------------------------------------
 
 /*
 Install user-written package:
@@ -711,8 +723,9 @@ mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatie
 The estimates differ between R and Stata, and also between the 'jwdid' and 'xthdidregress' commands within Stata. These discrepancies are likely due to differences in how the commands handle covariates that are collinear with fixed effects. When covariates are excluded, the estimates from R and Stata are identical.
 */
 
-
-/***** Stacked DiD (Wing 2024) *****/
+* ----------------------------------------------------------
+* Stacked DiD (Wing 2024)
+* ----------------------------------------------------------
 
 /*
 Code is from:
@@ -954,8 +967,9 @@ esttab tbl_sfig9_stk_opo5r tbl_sfig9_stk_opu5r tbl_sfig9_stk_ipo5r ///
 using "stata/output/sfig_09_did_hetero_stkdid.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
-
-/***** Dynamic TWFE DiD *****/
+* ----------------------------------------------------------
+* Dynamic TWFE DiD
+* ----------------------------------------------------------
 
 /*
 This estimator is possibly biased in the context of treatment effect heterogeneity. Code is from:
@@ -1022,9 +1036,10 @@ esttab tbl_sfig9_twfe_opo5r tbl_sfig9_twfe_opu5r tbl_sfig9_twfe_ipo5r ///
 	   tbl_sfig9_twfe_ipu5r tbl_sfig9_twfe_iplos tbl_sfig9_twfe_delr ///
 using "stata/output/sfig_09_did_hetero_twfedid.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
-
 	
-/***** Two-stage DiD (Gardner 2021) *****/
+* ----------------------------------------------------------
+* Two-stage DiD (Gardner 2021)
+* ----------------------------------------------------------
 
 /*
 Install user-written package:
@@ -1094,10 +1109,12 @@ graph export "stata/graph/sfig_09_did_hetero.pdf", replace
 
 
 *------------------------------------------------------------------------------*
-* Appendix Figure S10: DiD analysis using count data
+* Appendix Figure A7: DiD analysis using count data
 *------------------------------------------------------------------------------*
 
-/***** All (PH+DH+HC) *****/
+* ----------------------------------------------------------
+* All (PH+DH+HC)
+* ----------------------------------------------------------
 
 * Import Lao poverty data
 import excel "$dir/data import/lao_poverty_2015.xlsx", sheet("Lao Poverty 2015 by district") firstrow clear
@@ -1193,12 +1210,13 @@ forvalues i = 1/`vl' {
 
 * Export NHI estimates
 esttab tbl_sfig10_all_opo5 tbl_sfig10_all_opu5 tbl_sfig10_all_ipo5 ///
-	   tbl_sfig10_all_ipu5 tbl_sfig10_all_ipday tbl_sfig10_all_del ////
+	   tbl_sfig10_all_ipu5 tbl_sfig10_all_ipday tbl_sfig10_all_del ///
 using "stata/output/sfig_10_did_count_all.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
-
-/***** District-level (DH+HC) *****/
+* ----------------------------------------------------------
+* District-level (DH+HC)
+* ----------------------------------------------------------
 
 import excel "$dir/data export/02_clean_8_cln_q_dl.xlsx", firstrow clear
 
@@ -1238,12 +1256,13 @@ forvalues i = 1/`vl' {
 
 * Export NHI estimates
 esttab tbl_sfig10_dhhc_opo5 tbl_sfig10_dhhc_opu5 tbl_sfig10_dhhc_ipo5 ///
-	   tbl_sfig10_dhhc_ipu5 tbl_sfig10_dhhc_ipday tbl_sfig10_dhhc_del ////
+	   tbl_sfig10_dhhc_ipu5 tbl_sfig10_dhhc_ipday tbl_sfig10_dhhc_del ///
 using "stata/output/sfig_10_did_count_dhhc.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
-
-/***** District hospitals (DH only) *****/
+* ----------------------------------------------------------
+* District hospitals (DH only)
+* ----------------------------------------------------------
 
 import excel "$dir/data export/02_clean_8_cln_q_fl.xlsx", firstrow clear
 
@@ -1285,12 +1304,13 @@ forvalues i = 1/`vl' {
 
 * Export NHI estimates
 esttab tbl_sfig10_dh_opo5 tbl_sfig10_dh_opu5 tbl_sfig10_dh_ipo5 ///
-	   tbl_sfig10_dh_ipu5 tbl_sfig10_dh_ipday tbl_sfig10_dh_del ////
+	   tbl_sfig10_dh_ipu5 tbl_sfig10_dh_ipday tbl_sfig10_dh_del ///
 using "stata/output/sfig_10_did_count_dh.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
-
-/***** Health centers (HC only) *****/
+* ----------------------------------------------------------
+* Health centers (HC only)
+* ----------------------------------------------------------
 
 import excel "$dir/data export/02_clean_8_cln_q_fl.xlsx", firstrow clear
 
@@ -1331,7 +1351,7 @@ forvalues i = 1/`vl' {
 
 * Export NHI estimates
 esttab tbl_sfig10_hc_opo5 tbl_sfig10_hc_opu5 tbl_sfig10_hc_ipo5 ///
-	   tbl_sfig10_hc_ipu5 tbl_sfig10_hc_ipday tbl_sfig10_hc_del ////
+	   tbl_sfig10_hc_ipu5 tbl_sfig10_hc_ipday tbl_sfig10_hc_del ///
 using "stata/output/sfig_10_did_count_hc.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
@@ -1366,7 +1386,7 @@ graph export "stata/graph/sfig_10_did_count.pdf", replace
 
 
 *------------------------------------------------------------------------------*
-* Appendix Figure S11: DiD analysis using monthly data
+* Appendix Figure A8: DiD analysis using monthly data
 *------------------------------------------------------------------------------*
 
 import excel "$dir/data export/02_clean_8_cln_m_dl.xlsx", firstrow clear
@@ -1395,8 +1415,9 @@ forvalues i = 1/`vl' {
     local m: word `i' of `varlist'
 	local t: word `i' of `labels'	
 
-	
-/***** base *****/
+* ----------------------------------------------------------
+* Base model
+* ----------------------------------------------------------
 
 csdid `m' facnum semp urba litr imps, ivar(dnum) time(time) gvar(group_0) ///
         method(dripw) agg(event) long2 notyet wboot(reps(1000)) cluster(pnum) ///
@@ -1410,14 +1431,17 @@ csdid `m' facnum semp urba litr imps, ivar(dnum) time(time) gvar(group_0) ///
         ytitle("ATT", size(tiny))      
     graph save "stata/graph/temp/sfig_11_did_month_base_`m'.gph", replace
 
-/***** Balanced NHI exposure (e=0-2) *****/
+* ----------------------------------------------------------
+* Balanced NHI exposure (e=0-2)
+* ----------------------------------------------------------
 
 * Equation 3.11 from Callaway and Sant'Anna (2021) is implementable in R but not available through 'xthdidregress' or 'csdid'.
 
+* ----------------------------------------------------------
+* Last-treated units as control
+* ----------------------------------------------------------
 
-/***** Last-treated units as control *****/
-
-	csdid `m' facnum semp urba litr imps, ivar(dnum) time(time) gvar(group_0) method(dripw) agg(event) long2 wboot(reps(1000)) cluster(pnum) rseed(555) replace
+csdid `m' facnum semp urba litr imps, ivar(dnum) time(time) gvar(group_0) method(dripw) agg(event) long2 wboot(reps(1000)) cluster(pnum) rseed(555) replace
 	estimates store tbl_sfig11_last_`m'
 
 	csdid_plot, title("`t' (last)", size(vsmall)) legend(off) ///
@@ -1427,34 +1451,35 @@ csdid `m' facnum semp urba litr imps, ivar(dnum) time(time) gvar(group_0) ///
         ytitle("ATT", size(tiny))      
     graph save "stata/graph/temp/sfig_11_did_month_last_`m'.gph", replace
 
-	
-/***** No covariate (unconditional Parallel Trend Assumption) *****/
+* ----------------------------------------------------------
+* No covariate (unconditional Parallel Trend Assumption)
+* ----------------------------------------------------------
 
-	csdid `m', ivar(dnum) time(time) gvar(group_0) method(dripw) agg(event) long2 notyet wboot(reps(1000)) cluster(pnum) rseed(555) replace
+csdid `m', ivar(dnum) time(time) gvar(group_0) method(dripw) agg(event) long2 notyet wboot(reps(1000)) cluster(pnum) rseed(555) replace
 	estimates store tbl_sfig11_nocov_`m'
 
-	csdid_plot, title("`t' (no covarite)", size(vsmall)) legend(off) ///
-		xlabel(-23(1)14, labsize(tiny)) ///
-        ylabel(, labsize(tiny)) ///
-        xtitle("Time since NHI introduction", size(tiny)) ///
-        ytitle("ATT", size(tiny))      
-    graph save "stata/graph/temp/sfig_11_did_month_nocov_`m'.gph", replace
+csdid_plot, title("`t' (no covarite)", size(vsmall)) legend(off) ///
+	xlabel(-23(1)14, labsize(tiny)) ///
+	ylabel(, labsize(tiny)) ///
+	xtitle("Time since NHI introduction", size(tiny)) ///
+	ytitle("ATT", size(tiny))
+	graph save "stata/graph/temp/sfig_11_did_month_nocov_`m'.gph", replace
 
 }
 
 * Export NHI estimates
 esttab tbl_sfig11_base_opo5r tbl_sfig11_base_opu5r tbl_sfig11_base_ipo5r ///
-	   tbl_sfig11_base_ipu5r tbl_sfig11_base_iplos tbl_sfig11_base_delr ////
+	   tbl_sfig11_base_ipu5r tbl_sfig11_base_iplos tbl_sfig11_base_delr ///
 using "stata/output/sfig_11_did_month_base.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
 esttab tbl_sfig11_last_opo5r tbl_sfig11_last_opu5r tbl_sfig11_last_ipo5r ///
-	   tbl_sfig11_last_ipu5r tbl_sfig11_last_iplos tbl_sfig11_last_delr ////
+	   tbl_sfig11_last_ipu5r tbl_sfig11_last_iplos tbl_sfig11_last_delr ///
 using "stata/output/sfig_11_did_month_last.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
 esttab tbl_sfig8_nocov_opo5r tbl_sfig8_nocov_opu5r tbl_sfig8_nocov_ipo5r ///
-	   tbl_sfig8_nocov_ipu5r tbl_sfig8_nocov_iplos tbl_sfig8_nocov_delr ////
+	   tbl_sfig8_nocov_ipu5r tbl_sfig8_nocov_iplos tbl_sfig8_nocov_delr ///
 using "stata/output/sfig_11_did_month_nocov.xlsx", ///
 mtitles("Outpatient >=5" "Outpatient <5" "Inpatient >=5" "Inpatient <5" "Inpatient LOS" "Institutional birth") replace
 
