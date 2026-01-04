@@ -1,9 +1,9 @@
 
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 * Title: Impact of national health insurance on health services utilization in Lao People's Democratic Republic (Lao PDR): a quasi-experimental evaluation using longitudinal administrative data
 * Author: Sekeun Daniel Yu (yus109@mcmaster.ca), Michel Grignon, Godefroy Emmanuel Guindon, Jean-Éric Tarride
 * Date: July/2025
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 
 clear all
 global dir "/enter-directory-here/"
@@ -77,9 +77,9 @@ restore
 
 
 /*
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 * Set-up
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 
 # Provinces and the month of inception
 # -----------------------------------
@@ -105,9 +105,9 @@ gen group_org = group
 gen group_0 = group
 recode group_0 (9=0) 
 
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 * Figure 3. Difference-in-differences estimates by utilization outcome
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 
 /*
 Group-Time ATT (gt-ATT) estimator (Sant'Anna and Callaway 2021)
@@ -173,9 +173,9 @@ restore
 */
 
 
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 * Appendix Figure A2: DiD analysis by facility type
-*------------------------------------------------------------------------------*
+* ==============================================================================
 
 * ----------------------------------------------------------
 * District hospitals
@@ -291,9 +291,9 @@ graph combine ///
 graph export "stata/graph/sfig_05_did_facility.pdf", replace
 
 
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 * Appendix Figure A3: DiD analysis by district-level poverty status
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 
 ssc install event_plot, replace
 
@@ -319,7 +319,9 @@ Based on the results in R, possible alternatives include estimating an outcome m
 In the manuscript, I employed the interaction-weighted estimator of Sun and Abraham (2021) with covariates and the last-treated group as the control group.
 */
 
-/***** Interaction-weighted DiD estimator (Sun and Abraham 2021) *****/
+* ----------------------------------------------------------
+* Interaction-weighted DiD estimator (Sun and Abraham 2021)
+* ----------------------------------------------------------
 
 /*
 Install user-written package:
@@ -440,9 +442,9 @@ graph combine ///
 graph export "stata/graph/sfig_06_did_poverty.pdf", replace
 
 
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 * Appendix Figure A4: DiD analysis by intervention group
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 
 import excel "$dir/data export/02_clean_8_cln_q_dl.xlsx", firstrow clear
 
@@ -538,9 +540,9 @@ graph combine ///
 graph export "stata/graph/sfig_07_did_group.pdf", replace
 
 
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 * Appendix Figure A5: DiD analysis with adjusted model specifications
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 
 import excel "$dir/data export/02_clean_8_cln_q_dl.xlsx", firstrow clear
 
@@ -568,7 +570,7 @@ forvalues i = 1/`vl' {
 	local t: word `i' of `labels'	
 
 * ----------------------------------------------------------
-* base model
+* Base model
 * ----------------------------------------------------------
 
 csdid `m' facnum semp urba litr imps, ivar(dnum) time(time) gvar(group_0) ///
@@ -660,9 +662,9 @@ graph combine ///
 graph export "stata/graph/sfig_08_did_adjust.pdf", replace
 
 
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 * Appendix Figure A6: DiD analysis using alternative heterogeneity-robust estimators
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 
 import excel "$dir/data export/02_clean_8_cln_q_dl.xlsx", firstrow clear
 
@@ -1108,9 +1110,9 @@ graph combine ///
 graph export "stata/graph/sfig_09_did_hetero.pdf", replace
 
 
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 * Appendix Figure A7: DiD analysis using count data
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 
 * ----------------------------------------------------------
 * All (PH+DH+HC)
@@ -1385,9 +1387,9 @@ graph combine ///
 graph export "stata/graph/sfig_10_did_count.pdf", replace
 
 
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 * Appendix Figure A8: DiD analysis using monthly data
-*------------------------------------------------------------------------------*
+* ==============================================================================  
 
 import excel "$dir/data export/02_clean_8_cln_m_dl.xlsx", firstrow clear
 
